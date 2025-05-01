@@ -1,4 +1,4 @@
-package Tax:Txt;
+package Tax::Txt;
 
 use strict;
 use warnings;
