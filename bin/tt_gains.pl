@@ -10,7 +10,7 @@ GetOptions(\%OPT,"year=s");
 use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Tax:Txt;
+use Tax::Txt;
 
 my $USAGE = "$0 <tt>\n";
 die $USAGE unless (@ARGV == 1);
@@ -23,6 +23,7 @@ my %db;
 my %last_gain;
 my $zero = fmt_money(0.0);
 
+my $total_gain = 0;
 while (<IN>) {
 
   if (/^\s*BUYSELL/i) {
@@ -79,6 +80,7 @@ while (<IN>) {
           my $market      = fmt_money(abs($quantity)*$average_price);
 
           print OUT "GAIN $symbol $date $date_settle $quantity $currency $average_price_old $average_price $price_delta $market $cost $gain $quantity_new\n" if ($print); # Note flip of market/cost
+          $total_gain += $gain;
 
         # Case 3: Buy when having a long position
         } else {
@@ -150,6 +152,7 @@ while (<IN>) {
           my $market      = fmt_money(abs($quantity)*$average_price);
 
           print OUT "GAIN $symbol $date $date_settle $quantity $currency $average_price_old $average_price $price_delta $cost $market $gain $quantity_new\n" if ($print);
+          $total_gain += $gain;
 
           $last_gain{$symbol}{sell_days_epoch} = $epoch_days;
           $last_gain{$symbol}{date_sell} = $date_settle;
@@ -213,12 +216,10 @@ while (<IN>) {
   }
 }
 
-#use Data::Dumper;
-#print Dumper(\%db);
-
 print OUT "\n";
 foreach my $symbol (sort keys %db) {
-  #print OUT "POSITION $symbol $db{$symbol}{quantity}\n";
   my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
   print OUT "BUYSELL 5/1/2025 5/1/2025 $symbol $db{$symbol}{quantity} USD $db{$symbol}{average_price} $zero $cost\n"; 
 }
+
+warn "Info: Total gain is $total_gain\n";

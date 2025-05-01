@@ -6,7 +6,7 @@ use Time::Local;
 use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Tax:Txt;
+use Tax::Txt;
 
 my $USAGE = "$0 <taxtxt>\n";
 die $USAGE unless (@ARGV == 1);

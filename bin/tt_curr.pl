@@ -5,7 +5,7 @@ use strict;
 use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Tax:Txt;
+use Tax::Txt;
 
 my $USAGE = "$0 <tt> <tt usdcad>\n";
 die $USAGE unless (@ARGV == 2);
