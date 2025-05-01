@@ -216,10 +216,23 @@ while (<IN>) {
   }
 }
 
+my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+$mon  += 1;
+$year += 1900;
+my $date = "$mon/$mday/$year";
+
 print OUT "\n";
 foreach my $symbol (sort keys %db) {
   my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
-  print OUT "BUYSELL 5/1/2025 5/1/2025 $symbol $db{$symbol}{quantity} USD $db{$symbol}{average_price} $zero $cost\n"; 
+  
+  my $curr;
+  if ($symbol =~ /\.(\w+)$/) {
+    $curr = $1;
+  } else {
+    die "Error: Couldn't determine currency of symbol '$symbol'\n";
+  }
+
+  print OUT "BUYSELL $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
 }
 
 warn "Info: Total gain is $total_gain\n";
