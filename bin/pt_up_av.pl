@@ -6,7 +6,7 @@ use JSON;
 
 my $api_key = $ENV{ALPHA_VANTAGE_API_KEY};
 my $symbol = 'AAPL';
-my $url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=$symbol&apikey=$api_key";
+my $url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=$symbol&apikey=$api_key";
 
 my $ua = LWP::UserAgent->new;
 my $response = $ua->get($url);

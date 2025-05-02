@@ -114,7 +114,8 @@ while (<IN>) {
       $shares = $quantity;
       # TODO: Check when this happens"
     } else {
-      die "Error: DEBUG ME!!\n";
+      warn "Error: DEBUG ME!!\n";
+      next;
     }
 
     # There is an endcase where a negative dividend is paid when it had been given originally in error
