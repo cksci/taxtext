@@ -4,6 +4,7 @@ import yfinance as yf
 import argparse
 import warnings
 import re
+import sys
 from datetime import datetime, timedelta
 
 def get_usdcad():
@@ -38,25 +39,27 @@ def update_db(file_path):
         if command == 'HEADER':
             continue
 
-        account    = line[1]
-        status     = line[2]
-        risk       = line[3]
-        sector     = line[4]
-        symbol     = line[5]
-        currency   = line[6]
-        quantity   = float(line[7])
-        cost       = float(line[8])
-        price      = line[9]
-        change_pct = line[10]
-        gain_pct   = line[11]
-        dividend   = line[12]
-        div_yield  = line[13]
-        book       = line[14]
-        value      = line[15]
-        gain       = line[16]
-        book_cad   = line[17]
-        value_cad  = line[18]
-        gain_cad   = line[19]
+        account     = line[1]
+        status      = line[2]
+        risk        = line[3]
+        sector      = line[4]
+        symbol      = line[5]
+        currency    = line[6]
+        qty         = float(line[7])
+        cost        = float(line[8])
+        price       = float(line[9])
+        change_pct  = float(line[10])
+        gain_pct    = float(line[11])
+        div         = float(line[12])
+        yield_pct   = float(line[13])
+        div_tot     = float(line[14])
+        div_tot_cad = float(line[15])
+        book        = float(line[16]) 
+        value       = float(line[17]) 
+        gain        = float(line[18]) 
+        book_cad    = float(line[19]) 
+        value_cad   = float(line[20]) 
+        gain_cad    = float(line[21]) 
 
         symbol2, n = re.subn(r'\.CAD', '', symbol)
         if n > 0:
@@ -64,50 +67,64 @@ def update_db(file_path):
         else:
             symbol2, n = re.subn(r'\.USD', '', symbol)
 
+        symbol2 = re.sub(r'CALL', 'C', symbol2)
+        symbol2 = re.sub(r'PUT', 'C', symbol2)
 
-        match = re.search(r"(CALL|PUT)", symbol2)
-        if match:
-          continue
+        backup = f"HOLD {account} {status} {risk} {sector} {symbol2} {currency} {qty:.3f} {cost:.3f} {price:.3f} {change_pct} {gain_pct:.3f} {div:.3f} {yield_pct:.3f} {div_tot:.3f} {div_tot_cad:.3f} {book:.3f} {value:.3f} {gain:.3f} {book_cad:.3f} {value_cad:.3f} {gain_cad:.3f}"
 
-        #print(f"{symbol2} debug")
-        #continue
+        usdcad = get_usdcad()
+        stock  = yf.Ticker(symbol2)
+        try:
+            info = stock.info
+            if not info or 'regularMarketPrice' not in info:
+                print(f"Warning: No data for symbol {symbol2}", file=sys.stderr)
+                print(f"{backup}")
+                continue
+        except Exception as e:
+            print(f"Warning: No data for symbol {symbol2}", file=sys.stderr)
+            print(f"{backup}")
+            continue
 
-        usdcad    = get_usdcad()
-        stock     = yf.Ticker(symbol2)
-        dividends = stock.dividends
-
-        # Remove time zone
+        dividends       = stock.dividends
         dividends.index = dividends.index.tz_localize(None)
 
         new_sector = stock.info.get("sectorKey", None)
         if new_sector is None:
           new_sector = sector
 
-        new_book  = quantity*cost
+        new_book  = qty*cost
         new_price = stock.info.get("currentPrice", None)
         if new_price is None:
           new_price = stock.info.get("regularMarketPreviousClose", None)
 
-        new_div   = stock.info.get("dividendRate", None)
-
+        new_div = stock.info.get("dividendRate", None)
         if new_div is None:
           one_year_ago = datetime.now() - timedelta(days=365)
           recent_dividends = dividends[dividends.index > one_year_ago]
           new_div = recent_dividends.sum()
 
-        new_div_yield = 100*new_div/new_price
-        new_div_tot   = quantity*new_div
+        if abs(new_div-div) > 1e-6:
+          print(f"Info: Symbol {symbol2} dividend changed from {div:.3f} to {new_div:.3f}", file=sys.stderr)
+
+        new_yield_pct = 100.0*new_div/new_price
+        new_div_tot   = qty*new_div
 
         currency     = stock.info.get("currency", None)
-        new_value    = quantity*new_price
+        new_value    = qty*new_price
         new_gain     = new_value-new_book
-        new_gain_pct = 100*(new_value/new_book-1)
+        new_gain_pct = 100.0*(new_value/new_book-1)
 
-        new_book_cad    = usdcad*new_book
-        new_value_cad   = usdcad*new_value
-        new_gain_cad    = usdcad*new_gain
-        new_div_tot_cad = usdcad*new_div_tot
-        print(f"HOLD {account} {status} {risk} {new_sector} {symbol2} {currency} {quantity:.3f} {cost:.3f} {new_price:.3f} {change_pct} {new_gain_pct:.3f} {new_div:.3f} {new_div_yield:.3f} {new_div_tot:.3f} {new_div_tot_cad:.3f} {new_book:.3f} {new_value:.3f} {new_gain:.3f} {new_book_cad:.3f} {new_value_cad:.3f} {new_gain_cad:.3f}")
+        new_book_cad    = new_book
+        new_value_cad   = new_value
+        new_gain_cad    = new_gain
+        new_div_tot_cad = new_div_tot
+        if currency == "USD":
+            new_book_cad    = usdcad*new_book
+            new_value_cad   = usdcad*new_value
+            new_gain_cad    = usdcad*new_gain
+            new_div_tot_cad = usdcad*new_div_tot
+
+        print(f"HOLD {account} {status} {risk} {new_sector} {symbol2} {currency} {qty:.3f} {cost:.3f} {new_price:.3f} {change_pct} {new_gain_pct:.3f} {new_div:.3f} {new_yield_pct:.3f} {new_div_tot:.3f} {new_div_tot_cad:.3f} {new_book:.3f} {new_value:.3f} {new_gain:.3f} {new_book_cad:.3f} {new_value_cad:.3f} {new_gain_cad:.3f}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", type=str, help="ttxt portfolio")

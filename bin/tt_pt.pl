@@ -20,7 +20,7 @@ foreach my $fh (@fhs) {
   while (<$fh>) {
     if (/^\s*BUYSELL\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/i) {
       my ($symbol,$qty,$curr,$cost) = ($1,$2,$3,$4);
-      print OUT "HOLD - OPEN ON - $symbol $curr $qty $cost - - - - - - - - - - - - -\n";
+      print OUT "HOLD - OPEN ON - $symbol $curr $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
     }
   }
 }
