@@ -79,7 +79,7 @@ while (<IN>) {
           my $cost        = fmt_money(abs($quantity)*$average_price_old);
           my $market      = fmt_money(abs($quantity)*$average_price);
 
-          print OUT "GAIN $symbol $date $date_settle $quantity $currency $average_price_old $average_price $price_delta $market $cost $gain $quantity_new\n" if ($print); # Note flip of market/cost
+          print OUT "GAIN $date $date_settle $symbol $quantity $currency $average_price_old $average_price $price_delta $market $cost $gain $quantity_new\n" if ($print); # Note flip of market/cost
           $total_gain += $gain;
 
         # Case 3: Buy when having a long position
@@ -151,7 +151,7 @@ while (<IN>) {
           my $cost        = fmt_money(abs($quantity)*$average_price_old);
           my $market      = fmt_money(abs($quantity)*$average_price);
 
-          print OUT "GAIN $symbol $date $date_settle $quantity $currency $average_price_old $average_price $price_delta $cost $market $gain $quantity_new\n" if ($print);
+          print OUT "GAIN $date $date_settle $symbol $quantity $currency $average_price_old $average_price $price_delta $cost $market $gain $quantity_new\n" if ($print);
           $total_gain += $gain;
 
           $last_gain{$symbol}{sell_days_epoch} = $epoch_days;
@@ -232,7 +232,7 @@ foreach my $symbol (sort keys %db) {
     die "Error: Couldn't determine currency of symbol '$symbol'\n";
   }
 
-  print OUT "BUYSELL $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
+  print OUT "COST $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $cost\n"; 
 }
 
 warn "Info: Total gain is $total_gain\n";
