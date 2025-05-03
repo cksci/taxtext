@@ -10,6 +10,7 @@ def get_current_price(ticker_symbol):
         return
     latest_price = data['Close'].iloc[-1]
     print(f"Current price of {ticker_symbol}: ${latest_price:.2f}")
+    print(data)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

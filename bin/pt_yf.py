@@ -90,21 +90,24 @@ def update_db(file_path):
 
         new_sector = stock.info.get("sectorKey", None)
         if new_sector is None:
-          new_sector = sector
+            new_sector = sector
 
         new_book  = qty*cost
         new_price = stock.info.get("currentPrice", None)
         if new_price is None:
-          new_price = stock.info.get("regularMarketPreviousClose", None)
+            new_price = stock.info.get("regularMarketPreviousClose", None)
 
         new_div = stock.info.get("dividendRate", None)
         if new_div is None:
-          one_year_ago = datetime.now() - timedelta(days=365)
-          recent_dividends = dividends[dividends.index > one_year_ago]
-          new_div = recent_dividends.sum()
+            one_year_ago = datetime.now() - timedelta(days=365)
+            recent_dividends = dividends[dividends.index > one_year_ago]
+            new_div = recent_dividends.sum()
 
-        if abs(new_div-div) > 1e-6:
-          print(f"Info: Symbol {symbol2} dividend changed from {div:.3f} to {new_div:.3f}", file=sys.stderr)
+        if sector != new_sector:
+            print(f"Info: Symbol {symbol2} sector changed from {sector} to {new_sector}", file=sys.stderr)
+
+        if abs(new_div-div) > 1e-3:
+            print(f"Info: Symbol {symbol2} dividend changed from {div:.3f} to {new_div:.3f}", file=sys.stderr)
 
         new_yield_pct = 100.0*new_div/new_price
         new_div_tot   = qty*new_div
