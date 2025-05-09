@@ -3,7 +3,6 @@ use warnings;
 use strict;
 open(OUT,"|tabulate.pl") || die "Error: Can't pipe to 'tabulate.pl': $!\n";
 
-
 my @fhs;
 
 if (@ARGV) {

@@ -70,7 +70,7 @@ def update_db(file_path):
         symbol2 = re.sub(r'CALL', 'C', symbol2)
         symbol2 = re.sub(r'PUT', 'C', symbol2)
 
-        backup = f"HOLD {account} {status} {risk} {sector} {symbol2} {currency} {qty:.3f} {cost:.3f} {price:.3f} {change_pct} {gain_pct:.3f} {div:.3f} {yield_pct:.3f} {div_tot:.3f} {div_tot_cad:.3f} {book:.3f} {value:.3f} {gain:.3f} {book_cad:.3f} {value_cad:.3f} {gain_cad:.3f}"
+        backup = f"HOLD {account} {status} {risk} {sector} {symbol2} {currency} {qty:.4f} {cost:.4f} {price:.4f} {change_pct} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
 
         usdcad = get_usdcad()
         stock  = yf.Ticker(symbol2)
@@ -107,7 +107,7 @@ def update_db(file_path):
             print(f"Info: Symbol {symbol2} sector changed from {sector} to {new_sector}", file=sys.stderr)
 
         if abs(new_div-div) > 1e-3:
-            print(f"Info: Symbol {symbol2} dividend changed from {div:.3f} to {new_div:.3f}", file=sys.stderr)
+            print(f"Info: Symbol {symbol2} dividend changed from {div:.4f} to {new_div:.4f}", file=sys.stderr)
 
         new_yield_pct = 100.0*new_div/new_price
         new_div_tot   = qty*new_div
@@ -127,7 +127,7 @@ def update_db(file_path):
             new_gain_cad    = usdcad*new_gain
             new_div_tot_cad = usdcad*new_div_tot
 
-        print(f"HOLD {account} {status} {risk} {new_sector} {symbol2} {currency} {qty:.3f} {cost:.3f} {new_price:.3f} {change_pct} {new_gain_pct:.3f} {new_div:.3f} {new_yield_pct:.3f} {new_div_tot:.3f} {new_div_tot_cad:.3f} {new_book:.3f} {new_value:.3f} {new_gain:.3f} {new_book_cad:.3f} {new_value_cad:.3f} {new_gain_cad:.3f}")
+        print(f"HOLD {account} {status} {risk} {new_sector} {symbol2} {currency} {qty:.4f} {cost:.4f} {new_price:.4f} {change_pct} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", type=str, help="ttxt portfolio")

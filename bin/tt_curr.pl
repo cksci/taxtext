@@ -96,6 +96,7 @@ while (<IN>) {
       my $div_ps      = $bits[6];
       my $wh_ps       = $bits[7];
       my $value       = $bits[8];
+      my $div_tot     = $bits[9];
 
       my $usdcad;
       if (exists $usdcad{$date}) {
@@ -105,10 +106,11 @@ while (<IN>) {
         next;
       }
 
-      my $div_ps_cad = fmt_money($div_ps*$usdcad);
-      my $wh_ps_cad  = fmt_money($wh_ps*$usdcad);
-      my $value_cad  = fmt_money($value*$usdcad);
-      print OUT "$what $date $date_settle $symbol $quantity CAD $div_ps_cad $wh_ps_cad $value_cad\n";
+      my $div_ps_cad  = fmt_money($div_ps*$usdcad);
+      my $wh_ps_cad   = fmt_money($wh_ps*$usdcad);
+      my $value_cad   = fmt_money($value*$usdcad);
+      my $div_tot_cad = fmt_money($div_tot*$usdcad);
+      print OUT "$what $date $date_settle $symbol $quantity CAD $div_ps_cad $wh_ps_cad $value_cad $div_tot\n";
 
     } else {
       print OUT;

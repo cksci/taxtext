@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import yfinance as yf
 import sys
+print(sys.executable)
 
 def get_current_price(ticker_symbol):
     ticker = yf.Ticker(ticker_symbol)

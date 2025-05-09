@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+import yfinance as yf
+import pandas as pd
+import sys
+import warnings
+import re
+from datetime import datetime, timedelta
+
+date_str = datetime.today().date()
+if len(sys.argv) > 2:
+    last_arg = sys.argv[-1]
+
+    try:
+        # Try to parse the last argument as a date in YYYY-MM-DD format
+        date_str = datetime.strptime(last_arg, "%Y-%m-%d").date()
+        sys.argv.pop()
+    except ValueError:
+        # If parsing fails, treat as not a date and return today
+        date_str = datetime.today().date()
+
+for symbol in sys.argv[1:]:
+
+    stock = yf.Ticker(symbol)
+    date = pd.to_datetime(date_str)
+    ticker = yf.Ticker(symbol)
+
+    # Pull 7 days prior to ensure data even if date is a holiday/weekend
+    df = ticker.history(start=date - pd.Timedelta(days=7), end=date + pd.Timedelta(days=1))
+
+    if df.empty:
+        print(f"No trading data found for {symbol} around {date.strftime('%Y-%m-%d')}")
+
+    # Filter to dates on or before the requested date
+    index_tz = df.index.tz
+    date = pd.Timestamp(date).tz_localize(index_tz)
+    df = df[df.index <= date]
+
+    if df.empty:
+        print(f"No data available on or before {date.strftime('%Y-%m-%d')} for {symbol}")
+
+    last_date = df.index[-1].strftime('%Y-%m-%d')
+    price = df["Close"].iloc[-1]
+
+    curr  = ticker.info.get("currency", None)
+    dividends       = ticker.dividends
+    dividends.index = dividends.index.tz_localize(None)
+
+    div = ticker.info.get("dividendRate", None)
+    if div is None:
+        one_year_ago = datetime.now() - timedelta(days=365)
+        recent_dividends = dividends[dividends.index > one_year_ago]
+        div = recent_dividends.sum()
+
+    print(f"{symbol} {curr} {price:2f} {div:2f}")
