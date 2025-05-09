@@ -31,6 +31,7 @@ sub calc_fee {
 
 sub convert_date {
   my $str = shift;
+  $str =~ s/"//g;
 
   if ($str =~ /^\s*(\S+)\s+(\d+)\s*,\s+(\d+)/) {
 
@@ -43,6 +44,10 @@ sub convert_date {
     my ($day,$month,$year) = ($1,$2,$3);
     $year += 2000 if ($year < 2000);
     $month = month_num($month);
+    return "$month/$day/$year";
+  } elsif ($str =~ /^\s*(\d+)\-(\d+)\-(\d+)/i) {
+
+    my ($year,$month,$day) = ($1,$2,$3);
     return "$month/$day/$year";
 
   } elsif ($str =~ /^\s*(\d+)\/(\d+)\/(\d+)/) {
