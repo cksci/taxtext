@@ -4,11 +4,20 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money calc_fee convert_date get_date_year);
+our @EXPORT = qw(fmt_money fmt_money2 calc_fee convert_date get_date_year);
 
 sub fmt_money {
   my $value = shift;
   return sprintf("%.5f",$value);
+}
+
+sub fmt_money2 {
+  my ($number) = @_;
+  $number =~ s/,//g;
+  $number = sprintf("%.2f",$number);
+  my ($integer,$fraction) = split(/\./,$number);
+  $integer =~ s/(?<=\d)(?=(\d{3})+$)/,/g;
+  return defined $fraction ? "$integer.$fraction" : $integer;
 }
 
 sub calc_fee {
