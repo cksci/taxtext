@@ -57,7 +57,7 @@ while (<IN>) {
     my $qty         = $bits[7];
     my $cost        = $bits[8];
     my $price       = $bits[9];
-    my $change_pct  = $bits[10];
+    my $change      = $bits[10];
     my $gain_pct    = $bits[11];
     my $div         = $bits[12];
     my $yield       = $bits[13];

@@ -31,46 +31,43 @@ def read_db(file_path):
 def update_db(file_path):
     
     data = read_db(file_path)
-    print("HEADER ACCOUNT STATUS RISK SECTOR SYMBOL CURRENCY QUANTITY COST PRICE CHANGE_PCT GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD")
+    print("HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD")
 
     for line in data:
 
+        # TODO: Update to auto determine column indexes
         command    = line[0]
         if command == 'HEADER':
             continue
 
-        account     = line[1]
-        status      = line[2]
-        risk        = line[3]
-        sector      = line[4]
-        symbol      = line[5]
-        currency    = line[6]
-        qty         = float(line[7])
-        cost        = float(line[8])
-        price       = float(line[9])
-        change_pct  = float(line[10])
-        gain_pct    = float(line[11])
-        div         = float(line[12])
-        yield_pct   = float(line[13])
-        div_tot     = float(line[14])
-        div_tot_cad = float(line[15])
-        book        = float(line[16]) 
-        value       = float(line[17]) 
-        gain        = float(line[18]) 
-        book_cad    = float(line[19]) 
-        value_cad   = float(line[20]) 
-        gain_cad    = float(line[21]) 
+        account      = line[1]
+        symbol       = line[2]
+        symbol_yahoo = line[3]
+        currency     = line[4]
+        status       = line[5]
+        risk         = line[6]
+        sector       = line[7]
+        qty          = float(line[8])
+        cost         = float(line[9])
+        price        = float(line[10])
+        change       = float(line[11])
+        gain_pct     = float(line[12])
+        div          = float(line[13])
+        yield_pct    = float(line[14])
+        div_tot      = float(line[15])
+        div_tot_cad  = float(line[16])
+        book         = float(line[17]) 
+        value        = float(line[18]) 
+        gain         = float(line[19]) 
+        book_cad     = float(line[20]) 
+        value_cad    = float(line[21]) 
+        gain_cad     = float(line[22]) 
 
-        symbol2, n = re.subn(r'\.CAD', '', symbol)
-        if n > 0:
-            symbol2 += '.TO'
-        else:
-            symbol2, n = re.subn(r'\.USD', '', symbol)
-
+        symbol2 = symbol_yahoo
         symbol2 = re.sub(r'CALL', 'C', symbol2)
         symbol2 = re.sub(r'PUT', 'C', symbol2)
 
-        backup = f"HOLD {account} {status} {risk} {sector} {symbol2} {currency} {qty:.4f} {cost:.4f} {price:.4f} {change_pct} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
+        backup = f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {sector} {qty:.4f} {cost:.4f} {price:.4f} {change} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
 
         usdcad = get_usdcad()
         stock  = yf.Ticker(symbol2)
@@ -127,7 +124,7 @@ def update_db(file_path):
             new_gain_cad    = usdcad*new_gain
             new_div_tot_cad = usdcad*new_div_tot
 
-        print(f"HOLD {account} {status} {risk} {new_sector} {symbol2} {currency} {qty:.4f} {cost:.4f} {new_price:.4f} {change_pct} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
+        print(f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {new_sector} {qty:.4f} {cost:.4f} {new_price:.4f} {change} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", type=str, help="ttxt portfolio")

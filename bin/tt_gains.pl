@@ -300,21 +300,19 @@ foreach my $symbol (sort keys %db) {
     chomp $line;
     print OUT "$line #$db{$symbol}{quantity}\n";
   }
-}
 
-## foreach my $symbol (sort keys %db) {
-##   my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
-##   
-##   my $curr;
-##   if ($symbol =~ /\.(\w+)$/) {
-##     $curr = $1;
-##   } else {
-##     warn "Error: Couldn't determine currency of symbol '$symbol'\n";
-##     next;
-##   }
-## 
-##   print OUT "COST $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
-## }
+  my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
+  
+  my $curr;
+  if ($symbol =~ /\.(\w+)$/) {
+    $curr = $1;
+  } else {
+    warn "Error: Couldn't determine currency of symbol '$symbol'\n";
+    next;
+  }
+
+  print OUT "COST $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
+}
 
 unless (exists $OPT{quiet}) {
   my $tot_gain = 0;
