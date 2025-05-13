@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date get_date_year fmt_qty fmt_symbol);
+our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date get_date_year fmt_qty fmt_symbol tt_parse_header);
 
 sub fmt_money {
   my $value = shift;
@@ -163,6 +163,70 @@ sub fmt_symbol {
   } else {
     return $symbol;
   }
+}
+
+sub tt_parse_header {
+  my $line = shift;
+
+  chomp($line);
+  $line =~ s/^\s+//;
+  $line =~ s/\s+$//;
+
+  my %cols;
+  my @bits = split(/\s+/,$line);
+
+  for (my $i=0; $i<@bits; $i++) {
+    my $col = $bits[$i];
+    if ($col eq "HEADER") {
+    } elsif ($col eq "ACCOUNT") {
+      $cols{$col} = $i;
+    } elsif ($col eq "SYMBOL") {
+      $cols{$col} = $i;
+    } elsif ($col eq "SYMBOL_YAHOO") {
+      $cols{$col} = $i;
+    } elsif ($col eq "CURRENCY") {
+      $cols{$col} = $i;
+    } elsif ($col eq "STATUS") {
+      $cols{$col} = $i;
+    } elsif ($col eq "RISK") {
+      $cols{$col} = $i;
+    } elsif ($col eq "SECTOR") {
+      $cols{$col} = $i;
+    } elsif ($col eq "QUANTITY") {
+      $cols{$col} = $i;
+    } elsif ($col eq "COST") {
+      $cols{$col} = $i;
+    } elsif ($col eq "PRICE") {
+      $cols{$col} = $i;
+    } elsif ($col eq "CHANGE_PCT") {
+      $cols{$col} = $i;
+    } elsif ($col eq "GAIN_PCT") {
+      $cols{$col} = $i;
+    } elsif ($col eq "DIV") {
+      $cols{$col} = $i;
+    } elsif ($col eq "YIELD") {
+      $cols{$col} = $i;
+    } elsif ($col eq "DIV_TOT") {
+      $cols{$col} = $i;
+    } elsif ($col eq "DIV_TOT_CAD") {
+      $cols{$col} = $i;
+    } elsif ($col eq "BOOK") {
+      $cols{$col} = $i;
+    } elsif ($col eq "VALUE") {
+      $cols{$col} = $i;
+    } elsif ($col eq "GAIN") {
+      $cols{$col} = $i;
+    } elsif ($col eq "BOOK_CAD") {
+      $cols{$col} = $i;
+    } elsif ($col eq "VALUE_CAD") {
+      $cols{$col} = $i;
+    } elsif ($col eq "GAIN_CAD") {
+      $cols{$col} = $i;
+    } else {
+      die "Error: Found unknown column '$col' when parsing header '$line'\n";
+    }
+  }
+  return %cols;
 }
 
 1;
