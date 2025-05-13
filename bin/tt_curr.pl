@@ -24,7 +24,7 @@ open(IN,$file) || die "Error: Can't read file '$file': $!\n";
 open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
 
 while (<IN>) {
-  if (/^\s*BUYSELL/i) {
+  if (/^\s*(BUYSELL|COST)/i) {
     my @bits = split;
 
     my $currency = $bits[5];
@@ -35,6 +35,7 @@ while (<IN>) {
       my $date_settle = $bits[2];
       my $symbol      = $bits[3];
       my $quantity    = $bits[4];
+      my $currency    = $bits[5];
       my $price       = $bits[6];
       my $fee         = $bits[7];
       my $value       = $bits[8];

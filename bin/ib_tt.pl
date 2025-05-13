@@ -7,46 +7,57 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
 
-my $USAGE = "$0 <IBKR Activity csv>\n";
-die $USAGE unless (@ARGV == 1);
+my $USAGE = "$0 <IBKR Activity csv> ...\n";
+die $USAGE unless (@ARGV > 0);
 
-my $file = $ARGV[0];
-open(IN,$file) || die "Error: Can't read file '$file': $!\n";
-
-my %cols;
-while (<IN>) {
-  chomp;
-  if (/^Trades,Header/) {
-    my @bits = split(/,/);
-    for (my $i=0; $i<@bits; $i++) {
-      $cols{$bits[$i]} = $i;
-    }
-    last;
-  }
-}
+use Text::CSV;
+my $csv = Text::CSV->new({
+  binary    => 1,   # Allow special characters
+  auto_diag => 1,   # Report parsing errors
+});
 
 open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
 
-while (<IN>) {
-  chomp;
-  if (/^Trades/) {
+foreach my $file (@ARGV) {
+  open(IN,$file) || die "Error: Can't read file '$file': $!\n";
 
-    my @bits = split(/,/);
+  my %cols;
+  while (<IN>) {
+    chomp;
+    if (/^Trades,Header/) {
+      my @bits = split(/,/);
+      for (my $i=0; $i<@bits; $i++) {
+        $cols{$bits[$i]} = $i;
+      }
+      last;
+    }
+  }
 
-    my $activity    = $bits[$cols{"DataDiscriminator"}];
-    next unless ($activity eq "Order");
+  while (<IN>) {
 
-    my $date        = convert_date($bits[$cols{"Date/Time"}]);
-    my $date_settle = $date;
-    my $symbol      = $bits[$cols{"Symbol"}];
-    my $quantity    = $bits[$cols{"Quantity"}];
-    my $price       = fmt_money($bits[$cols{"T. Price"}]);
-    my $fee         = abs(fmt_money($bits[$cols{"Comm/Fee"}]));
-    my $currency    = $bits[$cols{"Currency"}];
-    my $value       = fmt_money(abs($bits[$cols{"Basis"}]));
-    my $code        = $bits[$cols{"Code"}];
+    chomp;
+    #s/(\d+)-(\d+)-(\d+)\s*,\s+(\d+):(\d+):(\d+)/$1-$2-$3/g; # Fix date
 
-    print OUT "BUYSELL $date $date_settle $symbol.$currency $quantity $currency $price $fee $value\n";
+    if (/^Trades/) {
+
+      $csv->parse($_);
+      my @bits = $csv->fields();
+
+      my $activity    = $bits[$cols{"DataDiscriminator"}];
+      next unless ($activity eq "Order");
+
+      my $date        = convert_date($bits[$cols{"Date/Time"}]);
+      my $date_settle = $date;
+      my $symbol      = fmt_symbol($bits[$cols{"Symbol"}]);
+      my $quantity    = fmt_qty($bits[$cols{"Quantity"}]);
+      my $price       = fmt_money($bits[$cols{"T. Price"}]);
+      my $fee         = abs(fmt_money($bits[$cols{"Comm/Fee"}]));
+      my $currency    = $bits[$cols{"Currency"}];
+      my $value       = fmt_money(abs($bits[$cols{"Basis"}]));
+      my $code        = $bits[$cols{"Code"}];
+
+      print OUT "BUYSELL $date $date_settle $symbol.$currency $quantity $currency $price $fee $value\n";
+    }
   }
 }
 

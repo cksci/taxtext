@@ -30,7 +30,7 @@ foreach my $file (@ARGV) {
     }
     $dup_line{$tmp} = 1;
 
-    if (/^\s*BUYSELL/i) {
+    if (/^\s*(BUYSELL|COST)/i) {
       my @bits = split;
 
       my $what        = $bits[0];

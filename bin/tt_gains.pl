@@ -35,8 +35,9 @@ my %tot_div;
 
 foreach my $fh (@fhs) {
   while (<$fh>) {
+    s/#.*//g;
 
-    if (/^\s*BUYSELL/i) {
+    if (/^\s*(BUYSELL|COST)/i) {
       my @bits = split;
 
       my $what        = $bits[0];
@@ -87,6 +88,7 @@ foreach my $fh (@fhs) {
           if ($quantity_old < 0) {
 
             $db{$symbol}{quantity} = $quantity_new;
+            push @{$db{$symbol}{transact}}, $_;
 
             my $price_delta = fmt_money($average_price_old-$average_price);
             my $gain        = fmt_money($quantity*$price_delta);
@@ -112,6 +114,7 @@ foreach my $fh (@fhs) {
 
             $db{$symbol}{quantity}      = $quantity_new;
             $db{$symbol}{average_price} = $average_price_new;
+            push @{$db{$symbol}{transact}}, $_;
 
             if (exists $last_gain{$symbol}{sell_days_epoch}) {
               my $delta_days = $epoch_days - $last_gain{$symbol}{sell_days_epoch};
@@ -133,6 +136,7 @@ foreach my $fh (@fhs) {
 
           $db{$symbol}{quantity}      = $quantity;
           $db{$symbol}{average_price} = $average_price;
+          push @{$db{$symbol}{transact}}, $_;
 
           if (exists $last_gain{$symbol}{sell_days_epoch}) {
             my $delta_days = $epoch_days - $last_gain{$symbol}{sell_days_epoch};
@@ -162,11 +166,13 @@ foreach my $fh (@fhs) {
 
             $db{$symbol}{quantity}      = $quantity_new;
             $db{$symbol}{average_price} = $average_price_new;
+            push @{$db{$symbol}{transact}}, $_;
 
           # Case 3: Sell when having a long position
           } else {
 
             $db{$symbol}{quantity} = $quantity_new;
+            push @{$db{$symbol}{transact}}, $_;
 
             my $price_delta = fmt_money($average_price-$average_price_old);
             my $gain        = fmt_money(abs($quantity)*$price_delta);
@@ -204,6 +210,7 @@ foreach my $fh (@fhs) {
 
           $db{$symbol}{quantity}      = $quantity;
           $db{$symbol}{average_price} = $average_price;
+          push @{$db{$symbol}{transact}}, $_;
         }
       }
     } elsif (/^\s*DIVIDEND/i) {
@@ -252,6 +259,8 @@ foreach my $fh (@fhs) {
         $db{$symbol}{quantity}      = $quantity;
         my $tmp = $db{$symbol}{average_price};
         $db{$symbol}{average_price} = fmt_money($db{$symbol}{average_price}/$factor);
+        push @{$db{$symbol}{transact}}, $_;
+
         warn "Warning: ADJUSTQ $symbol cost basis from $tmp by $factor to $db{$symbol}{average_price}\n";
       } else {
         warn "Error: Found stock quantity adjust for symbol '$symbol' at date '$date' but no position exists\n";
@@ -270,6 +279,8 @@ foreach my $fh (@fhs) {
       if (exists $db{$symbol}) {
         $db{$symbol}{quantity}      = sprintf("%.3f",$factor*$db{$symbol}{quantity});
         $db{$symbol}{average_price} = fmt_money($db{$symbol}{average_price}/$factor);
+        push @{$db{$symbol}{transact}}, $_;
+
       } else {
         warn "Error: Found stock split for symbol '$symbol' at date '$date' but no position exists\n";
       }
@@ -283,19 +294,27 @@ $year += 1900;
 my $date = "$mon/$mday/$year";
 
 print OUT "\n";
-foreach my $symbol (sort keys %db) {
-  my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
-  
-  my $curr;
-  if ($symbol =~ /\.(\w+)$/) {
-    $curr = $1;
-  } else {
-    warn "Error: Couldn't determine currency of symbol '$symbol'\n";
-    next;
-  }
 
-  print OUT "BUYSELL $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
+foreach my $symbol (sort keys %db) {
+  foreach my $line (@{$db{$symbol}{transact}}) {
+    chomp $line;
+    print OUT "$line #$db{$symbol}{quantity}\n";
+  }
 }
+
+## foreach my $symbol (sort keys %db) {
+##   my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
+##   
+##   my $curr;
+##   if ($symbol =~ /\.(\w+)$/) {
+##     $curr = $1;
+##   } else {
+##     warn "Error: Couldn't determine currency of symbol '$symbol'\n";
+##     next;
+##   }
+## 
+##   print OUT "COST $date $date $symbol $db{$symbol}{quantity} $curr $db{$symbol}{average_price} $zero $cost\n"; 
+## }
 
 unless (exists $OPT{quiet}) {
   my $tot_gain = 0;
