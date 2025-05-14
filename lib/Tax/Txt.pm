@@ -16,9 +16,11 @@ sub fmt_money {
 }
 
 sub fmt_money2 {
-  my ($number) = @_;
+  my $number = shift;
+  my $digs = shift;
+  $digs = 2 if (!defined $digs);
   $number =~ s/,//g;
-  $number = sprintf("%.2f",$number);
+  $number = sprintf("%.${digs}f",$number);
   my ($integer,$fraction) = split(/\./,$number);
   $integer =~ s/(?<=\d)(?=(\d{3})+$)/,/g;
   return defined $fraction ? "$integer.$fraction" : $integer;
@@ -85,13 +87,10 @@ sub convert_date {
     $month =~ s/^0//g;
     return "$month/$day/$year";
 
-  } elsif ($str =~ /^\s*(\d+)(\w+)(\d+)/) {
+  } elsif ($str =~ /^\s*(\d+)([a-zA-Z]+)(\d+)\s*/) {
     # BCE 15JAN27 34 C
     my ($day,$month,$year) = ($1,$2,$3);
-    $year += 2000 if ($year < 2000);
     $month = month_num($month);
-    $day =~ s/^0//g;
-    $month =~ s/^0//g;
     return "$month/$day/$year";
 
   } else {
@@ -150,8 +149,9 @@ sub fmt_qty {
 sub fmt_symbol {
   my $symbol = shift;
   # BCE 15JAN27 34 C
-  if ($symbol =~ /(\w+)\s+(\w+)\s+(\S+)\s+(C|P)/i) {
+  if ($symbol =~ /(\S+)\s+(\w+)\s+(\S+)\s+(C|P)/i) {
     my ($ticker,$expiry,$strike,$putcall) = ($1,$2,$3,$4);
+    $ticker =~ s/\.\w+//; # Ex. RCI.B => RCI
 
     my $date = convert_date($expiry);
     if ($date =~ m#(\d+)/(\d+)/(\d+)#) {

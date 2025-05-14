@@ -37,7 +37,7 @@ foreach my $file (@ARGV) {
     chomp;
 
     # TODO: Need to make this smarter since it's also catching forex
-    if (/^Trades.*Stocks/) {
+    if (/^Trades.*(Stocks|Options)/) {
 
       $csv->parse($_);
       my @bits = $csv->fields();
@@ -49,6 +49,7 @@ foreach my $file (@ARGV) {
       my $date_settle = $date;
       my $symbol      = fmt_symbol($bits[$cols{"Symbol"}]);
       my $quantity    = fmt_qty($bits[$cols{"Quantity"}]);
+      $quantity *= 100 if ($symbol =~ /CALL|PUT/);
       my $price       = fmt_money($bits[$cols{"T. Price"}]);
       my $fee         = abs(fmt_money($bits[$cols{"Comm/Fee"}]));
       my $currency    = $bits[$cols{"Currency"}];
