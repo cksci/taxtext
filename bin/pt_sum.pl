@@ -12,11 +12,18 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
 
-my $USAGE = "$0 <portfoliotext>\n";
-die $USAGE unless (@ARGV == 1);
+my $USAGE = "$0 <portfoliotext> ...\n";
+die $USAGE unless (@ARGV > 0);
 
-my $file = $ARGV[0];
-open(IN,$file) || die "Error: Can't read file '$file': $!\n";
+my @fhs;
+if (@ARGV) {
+  foreach my $file (@ARGV) {
+    open my $fh, '<', $file or die "Could not open '$file': $!";
+    push @fhs, $fh;
+  }
+} else {
+  push @fhs, *STDIN;
+}
 
 my %db;
 my %dbs;
@@ -24,81 +31,124 @@ my %accounts;
 
 my $zero = fmt_money2(0.0);
 
-while (<IN>) {
+foreach my $fh (@fhs) {
+  my %cols;
 
-  if (/^\s*CASH/i) {
-    my @bits = split;
+  while (<$fh>) {
+    chomp;
+    s/^\s+//;
+    s/\s+$//;
 
-    my $account = $bits[1];
-    my $sector  = $bits[4];
-    my $curr    = $bits[6];
-    my $qty     = $bits[7];
-    my $value   = $bits[17];
-
-    $db{$account}{cash_cad} = 0 unless (exists $db{$account}{cash_cad});
-    $db{$account}{cash_usd} = 0 unless (exists $db{$account}{cash_usd});  
-
-    if ($curr eq 'CAD') {
-      $db{$account}{cash_cad} += $qty;
-    } elsif ($curr eq 'USD') {
-      $db{$account}{cash_usd} += $qty;
-    } else {
+    if (/^\s*HEADER/) {
+      %cols = tt_parse_header($_);
     }
 
-  } elsif (/^\s*HOLD/i) {
-    my @bits = split;
+    if (/^\s*CASH/i) {
+      die "Error: Didn't find header before CASH lines!\n" if (scalar keys %cols == 0);
 
-    my $account     = $bits[1];
-    my $status      = $bits[2];
-    my $risk        = $bits[3];
-    my $sector      = $bits[4];
-    my $symbol      = $bits[5];
-    my $curr        = $bits[6];
-    my $qty         = $bits[7];
-    my $cost        = $bits[8];
-    my $price       = $bits[9];
-    my $change      = $bits[10];
-    my $gain_pct    = $bits[11];
-    my $div         = $bits[12];
-    my $yield       = $bits[13];
-    my $div_tot     = $bits[14];
-    my $div_tot_cad = $bits[15];
-    my $book        = $bits[16];
-    my $value       = $bits[17];
-    my $gain        = $bits[18];
-    my $book_cad    = $bits[19];
-    my $value_cad   = $bits[20];
-    my $gain_cad    = $bits[21];
-    
-    foreach my $catt (qw(equity ccd_cad ccd_usd)) {
-      foreach my $key (qw(book_cad value_cad gain_cad)) {
-        my $str = "${catt}_$key";
-        $db{$account}{$str} = 0 unless (exists $db{$account}{$str});
-      }
-    }
-    $dbs{$sector}{$account} = 0 unless (exists $dbs{$sector}{$account});
-    $dbs{$sector}{$account} += $value_cad;
-    $accounts{$account} = 1;
+      my @bits = split;
+      my $account   = $bits[$cols{ACCOUNT}];
+      my $curr      = $bits[$cols{CURRENCY}];
+      my $value     = $bits[$cols{VALUE}];
+      my $value_cad = $bits[$cols{VALUE_CAD}];
 
-    if ($symbol =~ /(\w+)(\d\d\d\d\d\d)(C|P)(\d\d\d\d\d\d\d\d)/) {
-      my ($underlying,$yymmdd,$callput,$strike) = ($1,$2,$3,$4);
+      $db{$account}{cash_cad} = 0 unless (exists $db{$account}{cash_cad});
+      $db{$account}{cash_usd} = 0 unless (exists $db{$account}{cash_usd});  
+
       if ($curr eq 'CAD') {
-        $db{$account}{ccd_cad_book_cad}  += $book_cad;
-        $db{$account}{ccd_cad_value_cad} += $value_cad;
-        $db{$account}{ccd_cad_gain_cad}  += $gain_cad;
+        $db{$account}{cash_cad} += $value_cad;
+      } elsif ($curr eq 'USD') {
+        $db{$account}{cash_usd} += $value_cad;
       } else {
-        $db{$account}{ccd_usd_book_cad}  += $book_cad;
-        $db{$account}{ccd_usd_value_cad} += $value_cad;
-        $db{$account}{ccd_usd_gain_cad}  += $gain_cad;
+        warn "Warning: Don't know how to handle currency '$curr' on line '$_'\n";
       }
-    } else {
-      $db{$account}{equity_book_cad}    += $book_cad;
-      $db{$account}{equity_value_cad}   += $value_cad;
-      $db{$account}{equity_gain_cad}    += $gain_cad;
-      $db{$account}{equity_div_tot_cad} += $div_tot_cad;
+
+      $db{$account}{equity_book_cad}    = 0 unless (exists $db{$account}{equity_book_cad});
+      $db{$account}{equity_value_cad}   = 0 unless (exists $db{$account}{equity_value_cad});
+      $db{$account}{equity_gain_cad}    = 0 unless (exists $db{$account}{equity_gain_cad});
+      $db{$account}{equity_div_tot_cad} = 0 unless (exists $db{$account}{equity_div_tot_cad});
+
+      $db{$account}{ccd_cad_book_cad}  = 0 unless (exists $db{$account}{ccd_cad_book_cad});
+      $db{$account}{ccd_cad_value_cad} = 0 unless (exists $db{$account}{ccd_cad_value_cad});
+      $db{$account}{ccd_cad_gain_cad}  = 0 unless (exists $db{$account}{ccd_cad_gain_cad});
+
+      $db{$account}{ccd_usd_book_cad}  = 0 unless (exists $db{$account}{ccd_usd_book_cad});
+      $db{$account}{ccd_usd_value_cad} = 0 unless (exists $db{$account}{ccd_usd_value_cad});
+      $db{$account}{ccd_usd_gain_cad}  = 0 unless (exists $db{$account}{ccd_usd_gain_cad});
+
+    } elsif (/^\s*HOLD/i) {
+
+      die "Error: Didn't find header before HOLD lines!\n" if (scalar keys %cols == 0);
+
+      my @bits = split;
+      my $account     = $bits[$cols{ACCOUNT}];
+      my $status      = $bits[$cols{STATUS}];
+      my $risk        = $bits[$cols{RISK}];
+      my $sector      = $bits[$cols{SECTOR}];
+      my $symbol      = $bits[$cols{SYMBOL}];
+      my $curr        = $bits[$cols{CURRENCY}];
+      my $qty         = $bits[$cols{QUANTITY}];
+      my $cost        = $bits[$cols{COST}];
+      my $price       = $bits[$cols{PRICE}];
+      my $change      = $bits[$cols{CHANGE}];
+      my $gain_pct    = $bits[$cols{GAIN_PCT}];
+      my $div         = $bits[$cols{DIV}];
+      my $yield       = $bits[$cols{YIELD}];
+      my $div_tot     = $bits[$cols{DIV_TOT}];
+      my $div_tot_cad = $bits[$cols{DIV_TOT_CAD}];
+      my $book        = $bits[$cols{BOOK}];
+      my $value       = $bits[$cols{VALUE}];
+      my $gain        = $bits[$cols{GAIN}];
+      my $book_cad    = $bits[$cols{BOOK_CAD}];
+      my $value_cad   = $bits[$cols{VALUE_CAD}];
+      my $gain_cad    = $bits[$cols{GAIN_CAD}];
+
+      $symbol =~ s/CALL/C/g;
+      $symbol =~ s/PUT/P/g;
+
+      $db{$account}{cash_cad} = 0 unless (exists $db{$account}{cash_cad});
+      $db{$account}{cash_usd} = 0 unless (exists $db{$account}{cash_usd});  
+      
+      $db{$account}{equity_book_cad}    = 0 unless (exists $db{$account}{equity_book_cad});
+      $db{$account}{equity_value_cad}   = 0 unless (exists $db{$account}{equity_value_cad});
+      $db{$account}{equity_gain_cad}    = 0 unless (exists $db{$account}{equity_gain_cad});
+      $db{$account}{equity_div_tot_cad} = 0 unless (exists $db{$account}{equity_div_tot_cad});
+
+      $db{$account}{ccd_cad_book_cad}  = 0 unless (exists $db{$account}{ccd_cad_book_cad});
+      $db{$account}{ccd_cad_value_cad} = 0 unless (exists $db{$account}{ccd_cad_value_cad});
+      $db{$account}{ccd_cad_gain_cad}  = 0 unless (exists $db{$account}{ccd_cad_gain_cad});
+
+      $db{$account}{ccd_usd_book_cad}  = 0 unless (exists $db{$account}{ccd_usd_book_cad});
+      $db{$account}{ccd_usd_value_cad} = 0 unless (exists $db{$account}{ccd_usd_value_cad});
+      $db{$account}{ccd_usd_gain_cad}  = 0 unless (exists $db{$account}{ccd_usd_gain_cad});
+
+      $dbs{$sector}{$account} = 0 unless (exists $dbs{$sector}{$account});
+      $dbs{$sector}{$account} += $value_cad;
+      $accounts{$account} = 1;
+
+      if ($symbol =~ /(\w+)(\d\d\d\d\d\d)(C|P)(\d\d\d\d\d\d\d\d)/) {
+        my ($underlying,$yymmdd,$callput,$strike) = ($1,$2,$3,$4);
+        if ($curr eq 'CAD') {
+          $db{$account}{ccd_cad_book_cad}  += $book_cad;
+          $db{$account}{ccd_cad_value_cad} += $value_cad;
+          $db{$account}{ccd_cad_gain_cad}  += $gain_cad;
+        } else {
+          $db{$account}{ccd_usd_book_cad}  += $book_cad;
+          $db{$account}{ccd_usd_value_cad} += $value_cad;
+          $db{$account}{ccd_usd_gain_cad}  += $gain_cad;
+        }
+      } else {
+        $db{$account}{equity_book_cad}    += $book_cad;
+        $db{$account}{equity_value_cad}   += $value_cad;
+        $db{$account}{equity_gain_cad}    += $gain_cad;
+        $db{$account}{equity_div_tot_cad} += $div_tot_cad;
+      }
     }
   }
 }
+
+my $total_cash_cad      = 0;
+my $total_cash_usd      = 0;
 
 my $total_book          = 0;
 my $total_value         = 0;
@@ -114,11 +164,14 @@ my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
-print OUT "ACCOUNT CASH_CAD CASH_USD CCD_CAD CCD_USD BOOK VALUE GAIN GAIN% CCD_CAD_GAIN% CCD_USD_GAIN% DIV_CAD YIELD%\n";
+print OUT "ACCOUNT CASH_CAD CASH_USD CCD_CAD CCD_USD BOOK_CAD VALUE_CAD TOT_VALUE_CAD GAIN_CAD GAIN% CCD_CAD_GAIN% CCD_USD_GAIN% DIV_CAD YIELD%\n";
 
 foreach my $account (sort keys %db) {
   my $cash_cad = $db{$account}{cash_cad};
   my $cash_usd = $db{$account}{cash_usd};  
+
+  $total_cash_cad += $cash_cad;
+  $total_cash_usd += $cash_usd;
 
   my $ccd_cad_book  = $db{$account}{ccd_cad_book_cad};
   my $ccd_cad_value = $db{$account}{ccd_cad_value_cad};
@@ -143,8 +196,14 @@ foreach my $account (sort keys %db) {
   my $gain    = $db{$account}{equity_gain_cad};
   my $div_tot = $db{$account}{equity_div_tot_cad};
 
-  my $gain_pct    = 100.0*$gain/$book;
-  my $yield_pct   = 100.0*$div_tot/$value;
+  my $value_with_cash = $value + $cash_usd + $cash_cad;
+
+  my $gain_pct = $zero;
+  my $yield_pct = $zero;
+  if ($book > 0) {
+    $gain_pct  = 100.0*$gain/$book;
+    $yield_pct = 100.0*$div_tot/$value;
+  }
 
   $total_book    += $book;
   $total_value   += $value;
@@ -165,6 +224,7 @@ foreach my $account (sort keys %db) {
   $ccd_usd_value    = fmt_money2($ccd_usd_value);
   $book             = fmt_money2($book);
   $value            = fmt_money2($value);
+  $value_with_cash  = fmt_money2($value_with_cash);
   $gain             = fmt_money2($gain);
   $gain_pct         = fmt_money2($gain_pct);
   $ccd_cad_gain_pct = fmt_money2($ccd_cad_gain_pct);
@@ -177,7 +237,7 @@ foreach my $account (sort keys %db) {
   $div_tot          = fmt_money2($div_tot);
   $yield_pct        = fmt_money2($yield_pct);
 
-  print OUT "$account $cash_cad $cash_usd $ccd_cad_value $ccd_usd_value $book $value $gain $gain_pct $ccd_cad_gain_pct $ccd_usd_gain_pct $div_tot $yield_pct\n";
+  print OUT "$account $cash_cad $cash_usd $ccd_cad_value $ccd_usd_value $book $value $value_with_cash $gain $gain_pct $ccd_cad_gain_pct $ccd_usd_gain_pct $div_tot $yield_pct\n";
 }
 
 my $total_ccd_cad_gain_pct = $zero;
@@ -197,6 +257,7 @@ $total_book    = $total_book;
 $total_value   = $total_value;
 $total_gain    = $total_gain;
 $total_div_tot = $total_div_tot;
+my $total_value_with_cash = $total_value + $total_cash_usd + $total_cash_cad;
 
 $total_ccd_cad_book  = $total_ccd_cad_book;
 $total_ccd_cad_value = $total_ccd_cad_value;
@@ -206,10 +267,13 @@ $total_ccd_usd_book  = $total_ccd_usd_book;
 $total_ccd_usd_value = $total_ccd_usd_value;
 $total_ccd_usd_gain  = $total_ccd_usd_gain;
 
+$total_cash_cad         = fmt_money2($total_cash_cad);
+$total_cash_usd         = fmt_money2($total_cash_usd);
 $total_ccd_cad_value    = fmt_money2($total_ccd_cad_value);
 $total_ccd_usd_value    = fmt_money2($total_ccd_usd_value);
 $total_book             = fmt_money2($total_book);
 $total_value            = fmt_money2($total_value);
+$total_value_with_cash  = fmt_money2($total_value_with_cash);
 $total_gain             = fmt_money2($total_gain);
 $total_gain_pct         = fmt_money2($total_gain_pct);
 $total_ccd_cad_gain_pct = fmt_money2($total_ccd_cad_gain_pct);
@@ -217,7 +281,7 @@ $total_ccd_usd_gain_pct = fmt_money2($total_ccd_usd_gain_pct);
 $total_div_tot          = fmt_money2($total_div_tot);
 $total_yield_pct        = fmt_money2($total_yield_pct);
 
-print OUT "TOTAL $zero $zero $total_ccd_cad_value $total_ccd_usd_value $total_book $total_value $total_gain $total_gain_pct $total_ccd_cad_gain_pct $total_ccd_usd_gain_pct $total_div_tot $total_yield_pct\n";
+print OUT "TOTAL $total_cash_cad $total_cash_usd $total_ccd_cad_value $total_ccd_usd_value $total_book $total_value $total_value_with_cash $total_gain $total_gain_pct $total_ccd_cad_gain_pct $total_ccd_usd_gain_pct $total_div_tot $total_yield_pct\n";
 print OUT "\n";
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";

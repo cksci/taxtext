@@ -53,7 +53,7 @@ foreach my $fh (@fhs) {
 
     if (/^\s*HOLD/) {
 
-      die "Error: Didn't find header before holdings!\n" if (scalar keys %cols == 0);
+      die "Error: Didn't find header before HOLD lines!\n" if (scalar keys %cols == 0);
 
       my @bits = split;
       my $symbol = $bits[$cols{SYMBOL}];

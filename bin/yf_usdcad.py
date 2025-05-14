@@ -29,3 +29,14 @@ data.ffill(inplace=True)
 for date, row in data.iterrows():
     close_price = float(row['Close'])
     print(f"{date.strftime('%-m/%-d/%Y')} {close_price:.4f}")
+
+# Fetch recent USD/CAD exchange rate data
+ticker = yf.Ticker("USDCAD=X")
+data = ticker.history(period="1d", interval="1m")  # 1-minute data for today
+
+# Get the latest available value
+latest_price = data['Close'].iloc[-1]
+
+# Get the current date and time
+now = datetime.now().strftime('%-m/%-d/%Y')
+print(f"{now} {latest_price:.4f}")

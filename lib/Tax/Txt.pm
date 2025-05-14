@@ -8,9 +8,11 @@ our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date get_date_
 
 sub fmt_money {
   my $value = shift;
+  my $digs = shift;
+  $digs = 5 if (!defined $digs);
   $value =~ s/,//g;
   $value =~ s/"//g;
-  return sprintf("%.5f",$value);
+  return sprintf("%.${digs}f",$value);
 }
 
 sub fmt_money2 {
@@ -209,7 +211,7 @@ sub tt_parse_header {
       $cols{$col} = $i;
     } elsif ($col eq "PRICE") {
       $cols{$col} = $i;
-    } elsif ($col eq "CHANGE_PCT") {
+    } elsif ($col eq "CHANGE") {
       $cols{$col} = $i;
     } elsif ($col eq "GAIN_PCT") {
       $cols{$col} = $i;
