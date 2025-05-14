@@ -103,7 +103,7 @@ foreach my $fh (@fhs) {
               $tot_gain{$symbol_curr} = 0 unless (exists $tot_gain{$symbol_curr});
               $tot_gain{$symbol_curr} += $gain;
 
-              if ($symbol =~ /(CALL|PUT)/) {
+              if (tt_is_option($symbol)) {
                 $tot_options_gain{$symbol_curr} = 0 unless (exists $tot_options_gain{$symbol_curr});
                 $tot_options_gain{$symbol_curr} += $gain;
               }
@@ -187,7 +187,7 @@ foreach my $fh (@fhs) {
               $tot_gain{$symbol_curr} = 0 unless (exists $tot_gain{$symbol_curr});
               $tot_gain{$symbol_curr} += $gain;
 
-              if ($symbol =~ /(CALL|PUT)/) {
+              if (tt_is_option($symbol)) {
                 $tot_options_gain{$symbol_curr} = 0 unless (exists $tot_options_gain{$symbol_curr});
                 $tot_options_gain{$symbol_curr} += $gain;
               }

@@ -61,7 +61,7 @@ foreach my $fh (@fhs) {
       my $qty    = $bits[$cols{QUANTITY}];
       my $cost   = $bits[$cols{COST}];
 
-      if ($symbol =~ /(\w+)\d\d\d\d\d\d(CALL|PUT)(\d\d\d\d\d\d\d\d)/) {
+      if ($symbol =~ /(\w+)\d\d\d\d\d\d(C|P)(\d\d\d\d\d\d\d\d)/) {
 
         my ($underlying,$cp,$strike) = ($1,$2,$3);
         my $ext = "";

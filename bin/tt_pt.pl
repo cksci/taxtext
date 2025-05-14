@@ -14,7 +14,7 @@ if (@ARGV) {
   push @fhs, *STDIN;
 }
 
-print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
+print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
 foreach my $fh (@fhs) {
   while (<$fh>) {
     if (/^\s*COST\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/i) {
@@ -26,7 +26,7 @@ foreach my $fh (@fhs) {
       $symbol_yahoo =~ s/\.CAD/.TO/;
       $symbol_yahoo =~ s/\.USD//;
 
-      print OUT "HOLD - $symbol $symbol_yahoo $curr OPEN ON - $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
+      print OUT "HOLD - $symbol $symbol_yahoo $curr OPEN ON -  - $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
     }
   }
 }

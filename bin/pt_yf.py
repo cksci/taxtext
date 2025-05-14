@@ -31,7 +31,7 @@ def read_db(file_path):
 def update_db(file_path):
     
     data = read_db(file_path)
-    print("HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD")
+    print("HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD")
 
     for line in data:
 
@@ -47,38 +47,35 @@ def update_db(file_path):
         status       = line[5]
         risk         = line[6]
         sector       = line[7]
-        qty          = float(line[8])
-        cost         = float(line[9])
-        price        = float(line[10])
-        change       = float(line[11])
-        gain_pct     = float(line[12])
-        div          = float(line[13])
-        yield_pct    = float(line[14])
-        div_tot      = float(line[15])
-        div_tot_cad  = float(line[16])
-        book         = float(line[17]) 
-        value        = float(line[18]) 
-        gain         = float(line[19]) 
-        book_cad     = float(line[20]) 
-        value_cad    = float(line[21]) 
-        gain_cad     = float(line[22]) 
+        type         = line[8]
+        qty          = float(line[9])
+        cost         = float(line[10])
+        price        = float(line[11])
+        change       = float(line[12])
+        gain_pct     = float(line[13])
+        div          = float(line[14])
+        yield_pct    = float(line[15])
+        div_tot      = float(line[16])
+        div_tot_cad  = float(line[17]) 
+        book         = float(line[18]) 
+        value        = float(line[19]) 
+        gain         = float(line[20]) 
+        book_cad     = float(line[21]) 
+        value_cad    = float(line[22]) 
+        gain_cad     = float(line[23])
 
-        symbol2 = symbol_yahoo
-        symbol2 = re.sub(r'CALL', 'C', symbol2)
-        symbol2 = re.sub(r'PUT', 'C', symbol2)
-
-        backup = f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {sector} {qty:.4f} {cost:.4f} {price:.4f} {change} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
+        backup = f"HOLD {account} {symbol} {symbol_yahoo} {currency} {status} {risk} {sector} {type} {qty:.4f} {cost:.4f} {price:.4f} {change} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
 
         usdcad = get_usdcad()
-        stock  = yf.Ticker(symbol2)
+        stock  = yf.Ticker(symbol_yahoo)
         try:
             info = stock.info
             if not info or 'regularMarketPrice' not in info:
-                print(f"Warning: No data for symbol {symbol2}", file=sys.stderr)
+                print(f"Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
                 print(f"{backup}")
                 continue
         except Exception as e:
-            print(f"Warning: No data for symbol {symbol2}", file=sys.stderr)
+            print(f"Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
             print(f"{backup}")
             continue
 
@@ -87,7 +84,20 @@ def update_db(file_path):
 
         new_sector = stock.info.get("sectorKey", None)
         if new_sector is None:
-            new_sector = sector
+            underlying = stock.info.get("underlyingSymbol", None)
+            if underlying is None:
+                new_sector = sector
+            else:
+                stock2 = yf.Ticker(underlying)
+                new_sector = stock2.info.get("sectorKey", None)
+                if new_sector is None:
+                    new_sector = sector
+
+        new_type = stock.info.get("quoteType", None)
+        if new_type is None:
+            new_type = type
+        if new_type != type:
+            print(f"Info: Symbol {symbol_yahoo} type changed from {type} to {new_type}", file=sys.stderr)
 
         new_book  = qty*cost
         new_price = stock.info.get("currentPrice", None)
@@ -96,7 +106,7 @@ def update_db(file_path):
 
         new_change = new_price-cost
         if price > 0 and new_price/price > 1.5:
-          print(f"Info: Symbol {symbol2} big price change from {price:.4f} to {new_price:.4f}", file=sys.stderr)
+          print(f"Info: Symbol {symbol_yahoo} big price change from {price:.4f} to {new_price:.4f}", file=sys.stderr)
 
         new_div = stock.info.get("dividendRate", None)
         if new_div is None:
@@ -105,10 +115,10 @@ def update_db(file_path):
             new_div = recent_dividends.sum()
 
         if sector != new_sector:
-            print(f"Info: Symbol {symbol2} sector changed from {sector} to {new_sector}", file=sys.stderr)
+            print(f"Info: Symbol {symbol_yahoo} sector changed from {sector} to {new_sector}", file=sys.stderr)
 
         if abs(new_div-div) > 1e-3:
-            print(f"Info: Symbol {symbol2} dividend changed from {div:.4f} to {new_div:.4f}", file=sys.stderr)
+            print(f"Info: Symbol {symbol_yahoo} dividend changed from {div:.4f} to {new_div:.4f}", file=sys.stderr)
 
         new_yield_pct = 100.0*new_div/new_price
         new_div_tot   = qty*new_div
@@ -128,7 +138,10 @@ def update_db(file_path):
             new_gain_cad    = usdcad*new_gain
             new_div_tot_cad = usdcad*new_div_tot
 
-        print(f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {new_sector} {qty:.4f} {cost:.4f} {new_price:.4f} {new_change:.4f} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
+        if sector == "crypto" or new_type == "CRYPTOCURRENCY":
+            print(f"HOLD {account} {symbol} {symbol_yahoo} {currency} {status} {risk} {new_sector} {new_type} {qty:.8f} {cost:.4f} {new_price:.4f} {new_change:.4f} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
+        else:
+            print(f"HOLD {account} {symbol} {symbol_yahoo} {currency} {status} {risk} {new_sector} {new_type} {qty:.4f} {cost:.4f} {new_price:.4f} {new_change:.4f} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", type=str, help="ttxt portfolio")

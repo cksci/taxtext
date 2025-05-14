@@ -81,30 +81,29 @@ foreach my $fh (@fhs) {
       die "Error: Didn't find header before HOLD lines!\n" if (scalar keys %cols == 0);
 
       my @bits = split;
-      my $account     = $bits[$cols{ACCOUNT}];
-      my $status      = $bits[$cols{STATUS}];
-      my $risk        = $bits[$cols{RISK}];
-      my $sector      = $bits[$cols{SECTOR}];
-      my $symbol      = $bits[$cols{SYMBOL}];
-      my $curr        = $bits[$cols{CURRENCY}];
-      my $qty         = $bits[$cols{QUANTITY}];
-      my $cost        = $bits[$cols{COST}];
-      my $price       = $bits[$cols{PRICE}];
-      my $change      = $bits[$cols{CHANGE}];
-      my $gain_pct    = $bits[$cols{GAIN_PCT}];
-      my $div         = $bits[$cols{DIV}];
-      my $yield       = $bits[$cols{YIELD}];
-      my $div_tot     = $bits[$cols{DIV_TOT}];
-      my $div_tot_cad = $bits[$cols{DIV_TOT_CAD}];
-      my $book        = $bits[$cols{BOOK}];
-      my $value       = $bits[$cols{VALUE}];
-      my $gain        = $bits[$cols{GAIN}];
-      my $book_cad    = $bits[$cols{BOOK_CAD}];
-      my $value_cad   = $bits[$cols{VALUE_CAD}];
-      my $gain_cad    = $bits[$cols{GAIN_CAD}];
-
-      $symbol =~ s/CALL/C/g;
-      $symbol =~ s/PUT/P/g;
+      my $account      = $bits[$cols{ACCOUNT}];
+      my $symbol       = $bits[$cols{SYMBOL}];
+      my $symbol_yahoo = $bits[$cols{SYMBOL_YAHOO}];
+      my $status       = $bits[$cols{STATUS}];
+      my $risk         = $bits[$cols{RISK}];
+      my $sector       = $bits[$cols{SECTOR}];
+      my $type         = $bits[$cols{TYPE}];
+      my $curr         = $bits[$cols{CURRENCY}];
+      my $qty          = $bits[$cols{QUANTITY}];
+      my $cost         = $bits[$cols{COST}];
+      my $price        = $bits[$cols{PRICE}];
+      my $change       = $bits[$cols{CHANGE}];
+      my $gain_pct     = $bits[$cols{GAIN_PCT}];
+      my $div          = $bits[$cols{DIV}];
+      my $yield        = $bits[$cols{YIELD}];
+      my $div_tot      = $bits[$cols{DIV_TOT}];
+      my $div_tot_cad  = $bits[$cols{DIV_TOT_CAD}];
+      my $book         = $bits[$cols{BOOK}];
+      my $value        = $bits[$cols{VALUE}];
+      my $gain         = $bits[$cols{GAIN}];
+      my $book_cad     = $bits[$cols{BOOK_CAD}];
+      my $value_cad    = $bits[$cols{VALUE_CAD}];
+      my $gain_cad     = $bits[$cols{GAIN_CAD}];
 
       $db{$account}{cash_cad} = 0 unless (exists $db{$account}{cash_cad});
       $db{$account}{cash_usd} = 0 unless (exists $db{$account}{cash_usd});  
@@ -164,7 +163,7 @@ my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
-print OUT "ACCOUNT CASH_CAD CASH_USD CCD_CAD CCD_USD BOOK_CAD VALUE_CAD TOT_VALUE_CAD GAIN_CAD GAIN% CCD_CAD_GAIN% CCD_USD_GAIN% DIV_CAD YIELD%\n";
+print OUT "ACCOUNT CASH_CAD CASH_USD CCD_CAD CCD_USD BOOK_CAD VALUE_CAD TOT_VALUE_CAD GAIN_CAD GAIN% CCD_CAD% CCD_USD% DIV_CAD YIELD%\n";
 
 foreach my $account (sort keys %db) {
   my $cash_cad = $db{$account}{cash_cad};

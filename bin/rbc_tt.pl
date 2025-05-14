@@ -55,8 +55,13 @@ foreach my $file (@ARGV) {
     if ($symbol_desc =~ /(CALL|PUT)\s+\.?(\w+)\s+(\d+)\/(\d+)\/(\d+)\s+([\d\.]+)/i) {
       my ($what,$symbol_tmp,$month_tmp,$day_tmp,$year_tmp,$strike) = ($1,$2,$3,$4,$5,$6);
       $strike = sprintf("%08d",1000*$strike);
-      #$what =~ s/^(\w).+/$1/;
-      $what =~ tr/a-z/A-Z/;
+
+      if ($what =~ /PUT/i) {
+        $what = "P";
+      } else {
+        $what = "C";
+      }
+
       $symbol = "${symbol_tmp}${year_tmp}${month_tmp}${day_tmp}${what}${strike}";
       $is_option = 1;
     }
@@ -64,8 +69,13 @@ foreach my $file (@ARGV) {
     if (defined $desc && $desc =~ /(CALL|PUT)\s+\.?(\w+)\s+(\d+)\/(\d+)\/(\d+)\s+([\d\.]+)/i) {
       my ($what,$symbol_tmp,$month_tmp,$day_tmp,$year_tmp,$strike) = ($1,$2,$3,$4,$5,$6);
       $strike = sprintf("%08d",1000*$strike);
-      #$what =~ s/^(\w).+/$1/;
-      $what =~ tr/a-z/A-Z/;
+
+      if ($what =~ /PUT/i) {
+        $what = "P";
+      } else {
+        $what = "C";
+      }
+
       $symbol = "${symbol_tmp}${year_tmp}${month_tmp}${day_tmp}${what}${strike}";
       $is_option = 1;
     }

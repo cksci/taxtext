@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date get_date_year fmt_qty fmt_symbol tt_parse_header);
+our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line);
 
 sub fmt_money {
   my $value = shift;
@@ -163,9 +163,9 @@ sub fmt_symbol {
       $strike = sprintf("%08d",1000*$strike);
 
       if ($putcall =~ /P/i) {
-        $putcall = "PUT";
+        $putcall = "P";
       } else {
-        $putcall = "CALL";
+        $putcall = "C";
       }
       return "${ticker}${y}${m}${d}${putcall}${strike}";
 
@@ -205,6 +205,8 @@ sub tt_parse_header {
       $cols{$col} = $i;
     } elsif ($col eq "SECTOR") {
       $cols{$col} = $i;
+    } elsif ($col eq "TYPE") {
+      $cols{$col} = $i;
     } elsif ($col eq "QUANTITY") {
       $cols{$col} = $i;
     } elsif ($col eq "COST") {
@@ -240,6 +242,25 @@ sub tt_parse_header {
     }
   }
   return %cols;
+}
+
+sub tt_is_option {
+  my $symbol = shift;
+  if ($symbol =~ /\w+\d\d\d\d\d\d(C|P)\d\d\d\d\d\d\d\d/) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+sub tt_parse_cost_line {
+  my $line = shift;
+  chomp $line;
+  $line =~ s/^\s+//;
+  $line =~ s/\s+$//;
+  my @bits = split(/\s+/,$line);
+  # COST 5/14/2025 5/14/2025 NVDA.CAD 1000 CAD 30.89085 0.00000 30890.85000
+  return (what=>$bits[0], date=>$bits[1], date_settle=>$bits[2], symbol=>$bits[3], quantity=>$bits[4], currency=>$bits[5], cost=>$bits[6], fee=>$bits[7], cost_total=>$bits[8]);
 }
 
 1;

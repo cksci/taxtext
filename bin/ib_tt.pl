@@ -49,7 +49,7 @@ foreach my $file (@ARGV) {
       my $date_settle = $date;
       my $symbol      = fmt_symbol($bits[$cols{"Symbol"}]);
       my $quantity    = fmt_qty($bits[$cols{"Quantity"}]);
-      $quantity *= 100 if ($symbol =~ /CALL|PUT/);
+      $quantity *= 100 if (tt_is_option($symbol));
       my $price       = fmt_money($bits[$cols{"T. Price"}]);
       my $fee         = abs(fmt_money($bits[$cols{"Comm/Fee"}]));
       my $currency    = $bits[$cols{"Currency"}];
