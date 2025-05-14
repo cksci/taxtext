@@ -51,8 +51,10 @@ foreach my $fh (@fhs) {
       my $value       = $bits[8];
 
       my $symbol_curr = "N/A";
-      if ($symbol =~ /\.(USD|CAD|MXN)/) {
+      if ($symbol =~ /\.(USD|CAD|MXN|GBP)/) {
         $symbol_curr = $1;
+      } else {
+        die "Error: Can't determine currency of symbol '$symbol'\n";
       }
 
       $symbol =~ s/^DLR\.\w+/DLR/; # Nuke currency for DLR.CAD and DLR.USD to handle journaling
@@ -307,7 +309,7 @@ foreach my $symbol (sort keys %db) {
   if ($symbol =~ /\.(\w+)$/) {
     $curr = $1;
   } else {
-    warn "Error: Couldn't determine currency of symbol '$symbol'\n";
+    warn "Warning: Couldn't determine currency of symbol '$symbol'\n";
     next;
   }
 

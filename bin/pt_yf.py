@@ -94,6 +94,8 @@ def update_db(file_path):
         if new_price is None:
             new_price = stock.info.get("regularMarketPreviousClose", None)
 
+        new_change = new_price-cost
+
         new_div = stock.info.get("dividendRate", None)
         if new_div is None:
             one_year_ago = datetime.now() - timedelta(days=365)
@@ -124,7 +126,7 @@ def update_db(file_path):
             new_gain_cad    = usdcad*new_gain
             new_div_tot_cad = usdcad*new_div_tot
 
-        print(f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {new_sector} {qty:.4f} {cost:.4f} {new_price:.4f} {change} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
+        print(f"HOLD {account} {symbol} {symbol2} {currency} {status} {risk} {new_sector} {qty:.4f} {cost:.4f} {new_price:.4f} {new_change:.4f} {new_gain_pct:.4f} {new_div:.4f} {new_yield_pct:.4f} {new_div_tot:.4f} {new_div_tot_cad:.4f} {new_book:.4f} {new_value:.4f} {new_gain:.4f} {new_book_cad:.4f} {new_value_cad:.4f} {new_gain_cad:.4f}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", type=str, help="ttxt portfolio")

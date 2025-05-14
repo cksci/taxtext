@@ -34,11 +34,10 @@ foreach my $file (@ARGV) {
   }
 
   while (<IN>) {
-
     chomp;
-    #s/(\d+)-(\d+)-(\d+)\s*,\s+(\d+):(\d+):(\d+)/$1-$2-$3/g; # Fix date
 
-    if (/^Trades/) {
+    # TODO: Need to make this smarter since it's also catching forex
+    if (/^Trades.*Stocks/) {
 
       $csv->parse($_);
       my @bits = $csv->fields();

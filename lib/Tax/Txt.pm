@@ -57,6 +57,8 @@ sub convert_date {
 
     my ($month,$day,$year) = ($1,$2,$3);
     $month = month_num($month);
+    $day =~ s/^0//g;
+    $month =~ s/^0//g;
     return "$month/$day/$year";
 
   } elsif ($str =~ /^\s*(\d+)\-([a-z]+)\-(\d+)/i) {
@@ -64,21 +66,30 @@ sub convert_date {
     my ($day,$month,$year) = ($1,$2,$3);
     $year += 2000 if ($year < 2000);
     $month = month_num($month);
+    $day =~ s/^0//g;
+    $month =~ s/^0//g;
     return "$month/$day/$year";
 
   } elsif ($str =~ /^\s*(\d+)\-(\d+)\-(\d+)/i) {
 
     my ($year,$month,$day) = ($1,$2,$3);
+    $day =~ s/^0//g;
+    $month =~ s/^0//g;
     return "$month/$day/$year";
 
   } elsif ($str =~ /^\s*(\d+)\/(\d+)\/(\d+)/) {
-    return "$1/$2/$3";
+    my ($month,$day,$year) = ($1,$2,$3);
+    $day =~ s/^0//g;
+    $month =~ s/^0//g;
+    return "$month/$day/$year";
 
   } elsif ($str =~ /^\s*(\d+)(\w+)(\d+)/) {
     # BCE 15JAN27 34 C
     my ($day,$month,$year) = ($1,$2,$3);
     $year += 2000 if ($year < 2000);
     $month = month_num($month);
+    $day =~ s/^0//g;
+    $month =~ s/^0//g;
     return "$month/$day/$year";
 
   } else {
