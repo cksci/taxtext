@@ -163,7 +163,8 @@ my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
-print OUT "ACCOUNT CASH_CAD CASH_USD CCD_CAD CCD_USD BOOK_CAD VALUE_CAD TOT_VALUE_CAD GAIN_CAD GAIN% CCD_CAD% CCD_USD% DIV_CAD YIELD%\n";
+print "# All values in CAD\n";
+print OUT "| ACCOUNT | \$CAD | \$USD | CCD_CAD | CCD_USD | BOOK | VALUE | TOT_VALUE | GAIN | GAIN% | CCD_CAD% | CCD_USD% | DIV | YIELD% |\n";
 
 foreach my $account (sort keys %db) {
   my $cash_cad = $db{$account}{cash_cad};
@@ -236,7 +237,7 @@ foreach my $account (sort keys %db) {
   $div_tot          = fmt_money2($div_tot,0);
   $yield_pct        = fmt_money2($yield_pct);
 
-  print OUT "$account $cash_cad $cash_usd $ccd_cad_value $ccd_usd_value $book $value $value_with_cash $gain $gain_pct $ccd_cad_gain_pct $ccd_usd_gain_pct $div_tot $yield_pct\n";
+  print OUT "| $account | $cash_cad | $cash_usd | $ccd_cad_value | $ccd_usd_value | $book | $value | $value_with_cash | $gain | $gain_pct | $ccd_cad_gain_pct | $ccd_usd_gain_pct | $div_tot | $yield_pct |\n";
 }
 
 my $total_ccd_cad_gain_pct = $zero;
@@ -280,27 +281,27 @@ $total_ccd_usd_gain_pct = fmt_money2($total_ccd_usd_gain_pct);
 $total_div_tot          = fmt_money2($total_div_tot,0);
 $total_yield_pct        = fmt_money2($total_yield_pct);
 
-print OUT "TOTAL $total_cash_cad $total_cash_usd $total_ccd_cad_value $total_ccd_usd_value $total_book $total_value $total_value_with_cash $total_gain $total_gain_pct $total_ccd_cad_gain_pct $total_ccd_usd_gain_pct $total_div_tot $total_yield_pct\n";
+print OUT "| TOTAL | $total_cash_cad | $total_cash_usd | $total_ccd_cad_value | $total_ccd_usd_value | $total_book | $total_value | $total_value_with_cash | $total_gain | $total_gain_pct | $total_ccd_cad_gain_pct | $total_ccd_usd_gain_pct | $total_div_tot | $total_yield_pct |\n";
 print OUT "\n";
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
-my $str = "SECTOR";
+my $str = "| SECTOR";
 foreach my $account (sort keys %accounts) {
-  $str .= " $account";
+  $str .= " | $account";
 }
-print OUT "$str TOTAL\n";
+print OUT "$str | TOTAL |\n";
 
 foreach my $sector (sort keys %dbs) {
   my $total = 0;
-  my $str = "$sector";
+  my $str = "| $sector";
   foreach my $account (sort keys %accounts) {
     if (exists $dbs{$sector}{$account}) {
-      $str .= " " . fmt_money2($dbs{$sector}{$account});
+      $str .= " | " . fmt_money2($dbs{$sector}{$account});
       $total += $dbs{$sector}{$account}; 
     } else {
-      $str .= " $zero";
+      $str .= " | $zero";
     }
   }
   $total = fmt_money2($total);
-  print OUT "$str $total\n";
+  print OUT "$str | $total |\n";
 }

@@ -16,21 +16,23 @@ my $USAGE = "$0 <portfoliott> <taxtext>\n";
 die $USAGE unless (@ARGV == 2);
 my ($pt_file,$tt_file) = @ARGV;
 
-my %tt;
+my %tt;       # Stores data of gains tt
+my %tt_found; # Stores symbols that exist in gains tt that are found in portfolio tt
+
 open(IN,$tt_file) || die "Error: Can't read file '$tt_file': $!\n";
 while (<IN>) {
   if (/^\s*COST/) {
     my %bits = tt_parse_cost_line($_);
     $tt{$bits{symbol}}{quantity} = $bits{quantity};
     $tt{$bits{symbol}}{cost} = $bits{cost};
+    $tt_found{$bits{symbol}} = 0;
   }
 }
-use Data::Dumper;
-#print Dumper(\%tt);
 
-open(IN,$pt_file) || die "Error: Can't read file '$pt_file': $!\n";
 
 my %cols;
+
+open(IN,$pt_file) || die "Error: Can't read file '$pt_file': $!\n";
 open(OUT,"|tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
 
 while (<IN>) {
@@ -73,6 +75,8 @@ while (<IN>) {
     if (exists $OPT{account} && $OPT{account} eq $account) {
       if (exists $tt{$symbol}) {
 
+        $tt_found{$symbol} = 1;
+
         my $qty_new = $tt{$symbol}{quantity};
         my $cost_new = $tt{$symbol}{cost};
 
@@ -99,4 +103,10 @@ while (<IN>) {
   }
 
   print OUT if ($flag);
+}
+
+foreach my $symbol (sort keys %tt_found) {
+  unless ($tt_found{$symbol}) {
+    warn "Warning: Symbol '$symbol' exists in gains tt but not in portfolio tt\n";
+  }
 }
