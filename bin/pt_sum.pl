@@ -63,18 +63,18 @@ foreach my $fh (@fhs) {
         warn "Warning: Don't know how to handle currency '$curr' on line '$_'\n";
       }
 
-      $db{$account}{equity_book_cad}    = 0 unless (exists $db{$account}{equity_book_cad});
-      $db{$account}{equity_value_cad}   = 0 unless (exists $db{$account}{equity_value_cad});
-      $db{$account}{equity_gain_cad}    = 0 unless (exists $db{$account}{equity_gain_cad});
-      $db{$account}{equity_div_tot_cad} = 0 unless (exists $db{$account}{equity_div_tot_cad});
+      $db{$account}{equity_book}    = 0 unless (exists $db{$account}{equity_book});
+      $db{$account}{equity_value}   = 0 unless (exists $db{$account}{equity_value});
+      $db{$account}{equity_gain}    = 0 unless (exists $db{$account}{equity_gain});
+      $db{$account}{equity_div_tot} = 0 unless (exists $db{$account}{equity_div_tot});
 
-      $db{$account}{ccd_cad_book_cad}  = 0 unless (exists $db{$account}{ccd_cad_book_cad});
-      $db{$account}{ccd_cad_value_cad} = 0 unless (exists $db{$account}{ccd_cad_value_cad});
-      $db{$account}{ccd_cad_gain_cad}  = 0 unless (exists $db{$account}{ccd_cad_gain_cad});
+      $db{$account}{ccd_cad_book}  = 0 unless (exists $db{$account}{ccd_cad_book});
+      $db{$account}{ccd_cad_value} = 0 unless (exists $db{$account}{ccd_cad_value});
+      $db{$account}{ccd_cad_gain}  = 0 unless (exists $db{$account}{ccd_cad_gain});
 
-      $db{$account}{ccd_usd_book_cad}  = 0 unless (exists $db{$account}{ccd_usd_book_cad});
-      $db{$account}{ccd_usd_value_cad} = 0 unless (exists $db{$account}{ccd_usd_value_cad});
-      $db{$account}{ccd_usd_gain_cad}  = 0 unless (exists $db{$account}{ccd_usd_gain_cad});
+      $db{$account}{ccd_usd_book}  = 0 unless (exists $db{$account}{ccd_usd_book});
+      $db{$account}{ccd_usd_value} = 0 unless (exists $db{$account}{ccd_usd_value});
+      $db{$account}{ccd_usd_gain}  = 0 unless (exists $db{$account}{ccd_usd_gain});
 
     } elsif (/^\s*HOLD/i) {
 
@@ -108,18 +108,18 @@ foreach my $fh (@fhs) {
       $db{$account}{cash_cad} = 0 unless (exists $db{$account}{cash_cad});
       $db{$account}{cash_usd} = 0 unless (exists $db{$account}{cash_usd});  
       
-      $db{$account}{equity_book_cad}    = 0 unless (exists $db{$account}{equity_book_cad});
-      $db{$account}{equity_value_cad}   = 0 unless (exists $db{$account}{equity_value_cad});
-      $db{$account}{equity_gain_cad}    = 0 unless (exists $db{$account}{equity_gain_cad});
-      $db{$account}{equity_div_tot_cad} = 0 unless (exists $db{$account}{equity_div_tot_cad});
+      $db{$account}{equity_book}    = 0 unless (exists $db{$account}{equity_book});
+      $db{$account}{equity_value}   = 0 unless (exists $db{$account}{equity_value});
+      $db{$account}{equity_gain}    = 0 unless (exists $db{$account}{equity_gain});
+      $db{$account}{equity_div_tot} = 0 unless (exists $db{$account}{equity_div_tot});
 
-      $db{$account}{ccd_cad_book_cad}  = 0 unless (exists $db{$account}{ccd_cad_book_cad});
-      $db{$account}{ccd_cad_value_cad} = 0 unless (exists $db{$account}{ccd_cad_value_cad});
-      $db{$account}{ccd_cad_gain_cad}  = 0 unless (exists $db{$account}{ccd_cad_gain_cad});
+      $db{$account}{ccd_cad_book}  = 0 unless (exists $db{$account}{ccd_cad_book});
+      $db{$account}{ccd_cad_value} = 0 unless (exists $db{$account}{ccd_cad_value});
+      $db{$account}{ccd_cad_gain}  = 0 unless (exists $db{$account}{ccd_cad_gain});
 
-      $db{$account}{ccd_usd_book_cad}  = 0 unless (exists $db{$account}{ccd_usd_book_cad});
-      $db{$account}{ccd_usd_value_cad} = 0 unless (exists $db{$account}{ccd_usd_value_cad});
-      $db{$account}{ccd_usd_gain_cad}  = 0 unless (exists $db{$account}{ccd_usd_gain_cad});
+      $db{$account}{ccd_usd_book}  = 0 unless (exists $db{$account}{ccd_usd_book});
+      $db{$account}{ccd_usd_value} = 0 unless (exists $db{$account}{ccd_usd_value});
+      $db{$account}{ccd_usd_gain}  = 0 unless (exists $db{$account}{ccd_usd_gain});
 
       $dbs{$sector}{$account} = 0 unless (exists $dbs{$sector}{$account});
       $dbs{$sector}{$account} += $value_cad;
@@ -128,23 +128,26 @@ foreach my $fh (@fhs) {
       if ($symbol =~ /(\w+)(\d\d\d\d\d\d)(C|P)(\d\d\d\d\d\d\d\d)/) {
         my ($underlying,$yymmdd,$callput,$strike) = ($1,$2,$3,$4);
         if ($curr eq 'CAD') {
-          $db{$account}{ccd_cad_book_cad}  += $book_cad;
-          $db{$account}{ccd_cad_value_cad} += $value_cad;
-          $db{$account}{ccd_cad_gain_cad}  += $gain_cad;
+          $db{$account}{ccd_cad_book}  += $book_cad;
+          $db{$account}{ccd_cad_value} += $value_cad;
+          $db{$account}{ccd_cad_gain}  += $gain_cad;
         } else {
-          $db{$account}{ccd_usd_book_cad}  += $book_cad;
-          $db{$account}{ccd_usd_value_cad} += $value_cad;
-          $db{$account}{ccd_usd_gain_cad}  += $gain_cad;
+          $db{$account}{ccd_usd_book}  += $book_cad;
+          $db{$account}{ccd_usd_value} += $value_cad;
+          $db{$account}{ccd_usd_gain}  += $gain_cad;
         }
       } else {
-        $db{$account}{equity_book_cad}    += $book_cad;
-        $db{$account}{equity_value_cad}   += $value_cad;
-        $db{$account}{equity_gain_cad}    += $gain_cad;
-        $db{$account}{equity_div_tot_cad} += $div_tot_cad;
+        $db{$account}{equity_book}    += $book_cad;
+        $db{$account}{equity_value}   += $value_cad;
+        $db{$account}{equity_gain}    += $gain_cad;
+        $db{$account}{equity_div_tot} += $div_tot_cad;
       }
     }
   }
 }
+
+use Data::Dumper;
+print Dumper(\%db);
 
 my $total_cash_cad      = 0;
 my $total_cash_usd      = 0;
@@ -167,56 +170,52 @@ print "# All values in CAD\n";
 print OUT "| ACCOUNT | \$CAD | \$USD | CCD_CAD | CCD_USD | BOOK | VALUE | TOT_VALUE | GAIN | GAIN% | CCD_CAD% | CCD_USD% | DIV | YIELD% |\n";
 
 foreach my $account (sort keys %db) {
-  my $cash_cad = $db{$account}{cash_cad};
-  my $cash_usd = $db{$account}{cash_usd};  
 
-  $total_cash_cad += $cash_cad;
-  $total_cash_usd += $cash_usd;
+  my $cash_cad      = $db{$account}{cash_cad};
+  my $cash_usd      = $db{$account}{cash_usd};
+  my $ccd_cad_book  = $db{$account}{ccd_cad_book};
+  my $ccd_cad_value = $db{$account}{ccd_cad_value};
+  my $ccd_cad_gain  = $db{$account}{ccd_cad_gain};
+  my $ccd_usd_book  = $db{$account}{ccd_usd_book};
+  my $ccd_usd_value = $db{$account}{ccd_usd_value};
+  my $ccd_usd_gain  = $db{$account}{ccd_usd_gain};
+  my $book          = $db{$account}{equity_book};
+  my $value         = $db{$account}{equity_value};
+  my $gain          = $db{$account}{equity_gain};
+  my $div_tot       = $db{$account}{equity_div_tot};
 
-  my $ccd_cad_book  = $db{$account}{ccd_cad_book_cad};
-  my $ccd_cad_value = $db{$account}{ccd_cad_value_cad};
-  my $ccd_cad_gain  = $db{$account}{ccd_cad_gain_cad};
+  my $value_all = $value + $cash_cad + $cash_usd + $ccd_cad_value + $ccd_usd_value;
 
-  my $ccd_cad_gain_pct = $zero;
-  if ($ccd_cad_book > 0) {
-    $ccd_cad_gain_pct = 100.0*$ccd_cad_gain/$ccd_cad_book;
-  }
-
-  my $ccd_usd_book  = $db{$account}{ccd_usd_book_cad};
-  my $ccd_usd_value = $db{$account}{ccd_usd_value_cad};
-  my $ccd_usd_gain  = $db{$account}{ccd_usd_gain_cad};
-
-  my $ccd_usd_gain_pct = $zero;
-  if ($ccd_usd_book > 0) {
-    $ccd_usd_gain_pct = 100.0*$ccd_usd_gain/$ccd_usd_book;
-  }
-
-  my $book    = $db{$account}{equity_book_cad};
-  my $value   = $db{$account}{equity_value_cad};
-  my $gain    = $db{$account}{equity_gain_cad};
-  my $div_tot = $db{$account}{equity_div_tot_cad};
-
-  my $value_with_cash = $value + $cash_usd + $cash_cad;
-
-  my $gain_pct = $zero;
-  my $yield_pct = $zero;
-  if ($book > 0) {
-    $gain_pct  = 100.0*$gain/$book;
-    $yield_pct = 100.0*$div_tot/$value;
-  }
-
-  $total_book    += $book;
-  $total_value   += $value;
-  $total_gain    += $gain;
-  $total_div_tot += $div_tot;
-
+  $total_cash_cad      += $cash_cad;
+  $total_cash_usd      += $cash_usd;
+  $total_book          += $book;
+  $total_value         += $value;
+  $total_gain          += $gain;
+  $total_div_tot       += $div_tot;
   $total_ccd_cad_book  += $ccd_cad_book;
   $total_ccd_cad_value += $ccd_cad_value;
   $total_ccd_cad_gain  += $ccd_cad_gain;
-
   $total_ccd_usd_book  += $ccd_usd_book;
   $total_ccd_usd_value += $ccd_usd_value;
   $total_ccd_usd_gain  += $ccd_usd_gain;
+
+  my $ccd_cad_gain_pct = $zero;
+  if (abs($ccd_cad_book) > 1e-3) {
+    $ccd_cad_gain_pct = 100.0*$ccd_cad_gain/$ccd_cad_book;
+  }
+
+  my $ccd_usd_gain_pct = $zero;
+  if (abs($ccd_usd_book) > 1e-3) {
+    $ccd_usd_gain_pct = 100.0*$ccd_usd_gain/$ccd_usd_book;
+  }
+
+  my $gain_pct  = $zero;
+  my $yield_pct = $zero;
+
+  if (abs($book) > 1e-3) {
+    $gain_pct  = 100.0*$gain/$book;
+    $yield_pct = 100.0*$div_tot/$value_all;
+  }
 
   $cash_cad         = fmt_money2($cash_cad,0);
   $cash_usd         = fmt_money2($cash_usd,0);
@@ -224,29 +223,25 @@ foreach my $account (sort keys %db) {
   $ccd_usd_value    = fmt_money2($ccd_usd_value,0);
   $book             = fmt_money2($book,0);
   $value            = fmt_money2($value,0);
-  $value_with_cash  = fmt_money2($value_with_cash,0);
   $gain             = fmt_money2($gain,0);
+  $value_all        = fmt_money2($value_all,0);
   $gain_pct         = fmt_money2($gain_pct);
   $ccd_cad_gain_pct = fmt_money2($ccd_cad_gain_pct);
   $ccd_usd_gain_pct = fmt_money2($ccd_usd_gain_pct);
   $div_tot          = fmt_money2($div_tot,0);
   $yield_pct        = fmt_money2($yield_pct);
   $gain_pct         = fmt_money2($gain_pct);
-  $ccd_cad_gain_pct = fmt_money2($ccd_cad_gain_pct);
-  $ccd_usd_gain_pct = fmt_money2($ccd_usd_gain_pct);
-  $div_tot          = fmt_money2($div_tot,0);
-  $yield_pct        = fmt_money2($yield_pct);
 
-  print OUT "| $account | $cash_cad | $cash_usd | $ccd_cad_value | $ccd_usd_value | $book | $value | $value_with_cash | $gain | $gain_pct | $ccd_cad_gain_pct | $ccd_usd_gain_pct | $div_tot | $yield_pct |\n";
+  print OUT "| $account | $cash_cad | $cash_usd | $ccd_cad_value | $ccd_usd_value | $book | $value | $value_all | $gain | $gain_pct | $ccd_cad_gain_pct | $ccd_usd_gain_pct | $div_tot | $yield_pct |\n";
 }
 
 my $total_ccd_cad_gain_pct = $zero;
-if ($total_ccd_cad_book > 0) {
+if (abs($total_ccd_cad_book) > 1e-3) {
   $total_ccd_cad_gain_pct = 100.0*$total_ccd_cad_gain/$total_ccd_cad_book;
 }
 
 my $total_ccd_usd_gain_pct = $zero;
-if ($total_ccd_usd_book > 0) {
+if (abs($total_ccd_usd_book) > 1e-3) {
   $total_ccd_usd_gain_pct = 100.0*$total_ccd_usd_gain/$total_ccd_usd_book;
 }
 

@@ -97,16 +97,20 @@ def update_db(file_path):
         if new_type is None:
             new_type = type
         if new_type != type:
-            print(f"Info: Symbol {symbol_yahoo} type changed from {type} to {new_type}", file=sys.stderr)
+            print(f"Info: Type changed from {type} to {new_type} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_book  = qty*cost
-        new_price = stock.info.get("currentPrice", None)
+
+        # Note also preMarketPrice
+        new_price = stock.info.get("regularMarketPrice", None)
         if new_price is None:
-            new_price = stock.info.get("regularMarketPreviousClose", None)
+            new_price = stock.info.get("currentPrice", None)
+            if new_price is None:
+                new_price = stock.info.get("regularMarketPreviousClose", None)
 
         new_change = new_price-cost
-        if price > 0 and new_price/price > 1.5:
-          print(f"Info: Symbol {symbol_yahoo} big price change from {price:.4f} to {new_price:.4f}", file=sys.stderr)
+        if price > 0 and abs(new_price/price) > 1.01:
+          print(f"Info: Price changed from {price:.4f} to {new_price:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_div = stock.info.get("dividendRate", None)
         if new_div is None:
@@ -115,10 +119,10 @@ def update_db(file_path):
             new_div = recent_dividends.sum()
 
         if sector != new_sector:
-            print(f"Info: Symbol {symbol_yahoo} sector changed from {sector} to {new_sector}", file=sys.stderr)
+            print(f"Info: Sector changed from {sector} to {new_sector} for symbol {symbol_yahoo}", file=sys.stderr)
 
         if abs(new_div-div) > 1e-3:
-            print(f"Info: Symbol {symbol_yahoo} dividend changed from {div:.4f} to {new_div:.4f}", file=sys.stderr)
+            print(f"Info: Dividend changed from {div:.4f} to {new_div:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_yield_pct = 100.0*new_div/new_price
         new_div_tot   = qty*new_div
