@@ -60,6 +60,7 @@ foreach my $fh (@fhs) {
       my $curr   = $bits[$cols{CURRENCY}];
       my $qty    = $bits[$cols{QUANTITY}];
       my $cost   = $bits[$cols{COST}];
+      my $type   = $bits[$cols{TYPE}];
 
       if ($symbol =~ /(\w+)\d\d\d\d\d\d(C|P)(\d\d\d\d\d\d\d\d)/) {
 
@@ -91,7 +92,8 @@ foreach my $fh (@fhs) {
         print "$symbol,$qty,$cost,$date\n";
 
       } elsif (exists $OPT{fg}) {
-        #print "$symbol,$date,by,$qty,$cost,$curr\n";
+        next if ($type =~ /ETF|CRYPTO/i);
+        next if ($symbol =~ /\.PR\./);
         push @fg,$symbol;
 
       } elsif (exists $OPT{tv}) {
