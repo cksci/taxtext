@@ -29,7 +29,6 @@ while (<IN>) {
   }
 }
 
-
 my %cols;
 
 open(IN,$pt_file) || die "Error: Can't read file '$pt_file': $!\n";
