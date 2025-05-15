@@ -109,7 +109,7 @@ def update_db(file_path):
                 new_price = stock.info.get("regularMarketPreviousClose", None)
 
         new_change = new_price-cost
-        if price > 0 and abs(new_price/price) > 1.01:
+        if price > 0 and abs(new_price/price) > 1.005:
           print(f"Info: Price changed from {price:.4f} to {new_price:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_div = stock.info.get("dividendRate", None)

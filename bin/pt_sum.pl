@@ -146,9 +146,6 @@ foreach my $fh (@fhs) {
   }
 }
 
-use Data::Dumper;
-print Dumper(\%db);
-
 my $total_cash_cad      = 0;
 my $total_cash_usd      = 0;
 
