@@ -116,11 +116,11 @@ while (<IN>) {
         my $delta_c = $cost - $cost_new;
 
         if (abs($delta_q) > 1e-3) {
-          warn "Warning: Updating symbol '$symbol' from account '$account' has quantity '$qty' in old pt '$pt_file_old' but quantity '$qty_new' in new pt '$pt_file_new'\n";
+          warn "# Warning: Updating symbol '$symbol' from account '$account' has quantity '$qty' in old pt '$pt_file_old' but quantity '$qty_new' in new pt '$pt_file_new'\n";
           $flag = 0;
         }
         if (abs($delta_c) > 1e-3) {
-          warn "Warning: Updating symbol '$symbol' from account '$account' has cost '$cost' in old pt '$pt_file_old' but cost '$cost_new' in new pt '$pt_file_new'\n";
+          warn "# Warning: Updating symbol '$symbol' from account '$account' has cost '$cost' in old pt '$pt_file_old' but cost '$cost_new' in new pt '$pt_file_new'\n";
           $flag = 0;
         }
 
@@ -132,7 +132,7 @@ while (<IN>) {
       } else {
         
         # Symbol exists in old pt but not new one - delete
-        warn "Warning: Deleting symbol '$symbol' from account '$account' from old pt '$pt_file_old' not found in new pt '$pt_file_new'\n";
+        warn "# Warning: Deleting symbol '$symbol' from account '$account' from old pt '$pt_file_old' not found in new pt '$pt_file_new'\n";
         $flag = 0;
       }
     }
@@ -145,7 +145,7 @@ foreach my $account (sort keys %db_new) {
   foreach my $symbol (sort keys %{$db_new{$account}}) {
 
     unless ($db_new{$account}{$symbol}{found_in_old}) {
-      warn "Warning: Adding symbol '$symbol' from account '$account' not found in old pt '$pt_file_old' but exists in new pt file '$pt_file_new'\n";
+      warn "# Warning: Adding symbol '$symbol' from account '$account' not found in old pt '$pt_file_old' but exists in new pt file '$pt_file_new'\n";
       print OUT "$db_new{$account}{$symbol}{line}";
     }
   }

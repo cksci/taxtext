@@ -71,11 +71,11 @@ def update_db(file_path):
         try:
             info = stock.info
             if not info or 'regularMarketPrice' not in info:
-                print(f"Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
+                print(f"# Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
                 print(f"{backup}")
                 continue
         except Exception as e:
-            print(f"Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
+            print(f"# Warning: No data for symbol {symbol_yahoo}", file=sys.stderr)
             print(f"{backup}")
             continue
 
@@ -97,7 +97,7 @@ def update_db(file_path):
         if new_type is None:
             new_type = type
         if new_type != type:
-            print(f"Info: Type changed from {type} to {new_type} for symbol {symbol_yahoo}", file=sys.stderr)
+            print(f"# Info: Type changed from {type} to {new_type} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_book  = qty*cost
 
@@ -110,7 +110,7 @@ def update_db(file_path):
 
         new_change = new_price-cost
         if price > 0 and abs(new_price/price) > 1.005:
-          print(f"Info: Price changed from {price:.4f} to {new_price:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
+          print(f"# Info: Price changed from {price:.4f} to {new_price:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_div = stock.info.get("dividendRate", None)
         if new_div is None:
@@ -119,10 +119,10 @@ def update_db(file_path):
             new_div = recent_dividends.sum()
 
         if sector != new_sector:
-            print(f"Info: Sector changed from {sector} to {new_sector} for symbol {symbol_yahoo}", file=sys.stderr)
+            print(f"# Info: Sector changed from {sector} to {new_sector} for symbol {symbol_yahoo}", file=sys.stderr)
 
         if abs(new_div-div) > 1e-3:
-            print(f"Info: Dividend changed from {div:.4f} to {new_div:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
+            print(f"# Info: Dividend changed from {div:.4f} to {new_div:.4f} for symbol {symbol_yahoo}", file=sys.stderr)
 
         new_yield_pct = 100.0*new_div/new_price
         new_div_tot   = qty*new_div

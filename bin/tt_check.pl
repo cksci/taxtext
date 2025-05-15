@@ -26,7 +26,7 @@ foreach my $file (@ARGV) {
     $tmp =~ s/\s*$//g;
 
     if (exists $dup_line{$tmp}) {
-      warn "Warning: Found duplicated line: $tmp\n" unless ($tmp =~ /^DEPOSIT/); # Ignore duplicate deposits ex. rewards
+      warn "# Warning: Found duplicated line: $tmp\n" unless ($tmp =~ /^DEPOSIT/); # Ignore duplicate deposits ex. rewards
     }
     $dup_line{$tmp} = 1;
 
@@ -54,7 +54,7 @@ foreach my $file (@ARGV) {
 foreach my $symbol (sort keys %db) {
   my @currencies = keys %{$db{$symbol}};
   if (@currencies > 1) {
-    warn "Warning: Multiple currencies for symbol '$symbol' " . join(", ",@currencies) . " \n";
+    warn "# Warning: Multiple currencies for symbol '$symbol' " . join(", ",@currencies) . " \n";
   }
 }
 
@@ -67,6 +67,6 @@ foreach my $key (sort keys %dup_curr) {
     $pos = 1 if ($quantity > 0);
   }
   if ($pos && $neg) {
-    warn "Warning: Found same day positive and negative BUYSELL for $key\n";
+    warn "# Warning: Found same day positive and negative BUYSELL for $key\n";
   }
 }

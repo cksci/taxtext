@@ -60,7 +60,7 @@ foreach my $fh (@fhs) {
       } elsif ($curr eq 'USD') {
         $db{$account}{cash_usd} += $value_cad;
       } else {
-        warn "Warning: Don't know how to handle currency '$curr' on line '$_'\n";
+        warn "# Warning: Don't know how to handle currency '$curr' on line '$_'\n";
       }
 
       $db{$account}{equity_book}    = 0 unless (exists $db{$account}{equity_book});
