@@ -259,6 +259,12 @@ $total_ccd_usd_book  = $total_ccd_usd_book;
 $total_ccd_usd_value = $total_ccd_usd_value;
 $total_ccd_usd_gain  = $total_ccd_usd_gain;
 
+my $total_cash_cad_pct      = fmt_money2(100.0*$total_cash_cad/$total_value_with_cash);
+my $total_cash_usd_pct      = fmt_money2(100.0*$total_cash_usd/$total_value_with_cash);
+my $total_ccd_cad_value_pct = fmt_money2(100.0*$total_ccd_cad_value/$total_value_with_cash);
+my $total_ccd_usd_value_pct = fmt_money2(100.0*$total_ccd_usd_value/$total_value_with_cash);
+my $total_value_pct         = fmt_money2(100.0*$total_value/$total_value_with_cash);
+
 $total_cash_cad         = fmt_money2($total_cash_cad,0);
 $total_cash_usd         = fmt_money2($total_cash_usd,0);
 $total_ccd_cad_value    = fmt_money2($total_ccd_cad_value,0);
@@ -274,6 +280,7 @@ $total_div_tot          = fmt_money2($total_div_tot,0);
 $total_yield_pct        = fmt_money2($total_yield_pct);
 
 print OUT "| TOTAL | $total_cash_cad | $total_cash_usd | $total_ccd_cad_value | $total_ccd_usd_value | $total_book | $total_value | $total_value_with_cash | $total_gain | $total_gain_pct | $total_ccd_cad_gain_pct | $total_ccd_usd_gain_pct | $total_div_tot | $total_yield_pct |\n";
+print OUT "| TOTAL% | $total_cash_cad_pct | $total_cash_usd_pct | $total_ccd_cad_value_pct | $total_ccd_usd_value_pct | - | $total_value_pct | 100.00 | - | - | - | - | - | - |\n";
 print OUT "\n";
 
 open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
