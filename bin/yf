@@ -6,49 +6,55 @@ import warnings
 import re
 from datetime import datetime, timedelta
 
-date_str = datetime.today().date()
-if len(sys.argv) > 2:
-    last_arg = sys.argv[-1]
+symbol = sys.argv[1]
 
-    try:
-        # Try to parse the last argument as a date in YYYY-MM-DD format
-        date_str = datetime.strptime(last_arg, "%Y-%m-%d").date()
-        sys.argv.pop()
-    except ValueError:
-        # If parsing fails, treat as not a date and return today
-        date_str = datetime.today().date()
+if len(sys.argv) ==  2:
+    
+    date_str  = datetime.today().date()
+    date2_str = datetime.today().date()
 
-for symbol in sys.argv[1:]:
+elif len(sys.argv) == 3:
 
-    stock = yf.Ticker(symbol)
-    date = pd.to_datetime(date_str)
-    ticker = yf.Ticker(symbol)
+    date_arg  = sys.argv[2]
+    date2_str = datetime.today().date()
+    date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
 
-    # Pull 7 days prior to ensure data even if date is a holiday/weekend
-    df = ticker.history(start=date - pd.Timedelta(days=7), end=date + pd.Timedelta(days=1))
+elif len(sys.argv) == 4:
 
-    if df.empty:
-        print(f"No trading data found for {symbol} around {date.strftime('%Y-%m-%d')}")
+    date_arg  = sys.argv[2]
+    date2_arg = sys.argv[3]
 
-    # Filter to dates on or before the requested date
-    index_tz = df.index.tz
-    date = pd.Timestamp(date).tz_localize(index_tz)
-    df = df[df.index <= date]
+    date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
+    date2_str = datetime.strptime(date2_arg, "%Y-%m-%d").date()
 
-    if df.empty:
-        print(f"No data available on or before {date.strftime('%Y-%m-%d')} for {symbol}")
+#print(f"{date_str} to {date2_str}")
 
-    last_date = df.index[-1].strftime('%Y-%m-%d')
-    price = df["Close"].iloc[-1]
+start_date = pd.to_datetime(date_str)
+end_date = pd.to_datetime(date2_str)
+#print(start_date)
+#print(end_date)
 
-    curr  = ticker.info.get("currency", None)
-    dividends       = ticker.dividends
-    dividends.index = dividends.index.tz_localize(None)
+ticker = yf.Ticker(symbol)
 
-    div = ticker.info.get("dividendRate", None)
-    if div is None:
-        one_year_ago = datetime.now() - timedelta(days=365)
-        recent_dividends = dividends[dividends.index > one_year_ago]
-        div = recent_dividends.sum()
+fetch_start = start_date - pd.Timedelta(days=3)
+fetch_end = end_date + pd.Timedelta(days=3)
 
-    print(f"{symbol} {curr} {price:2f} {div:2f}")
+df = ticker.history(start=fetch_start, end=fetch_end)
+#print(df)
+
+if df.empty:
+    print(f"No trading data found for {symbol} between {start_date.date()} and {end_date.date()}", file=sys.err)
+else:
+    # Fix: Localize comparison dates
+    if df.index.tz is not None:
+        start_date = start_date.tz_localize(df.index.tz)
+        end_date = end_date.tz_localize(df.index.tz)
+
+    df_filtered = df[(df.index >= start_date) & (df.index <= end_date)]
+
+    if df_filtered.empty:
+        print(f"No trading data found within range", file=sys.err)
+    else:
+        #print(df_filtered[["Open", "High", "Low", "Close", "Volume"]])
+        for idx, row in df_filtered.iterrows():
+            print(f"{idx.date()} {row['Close']:.2f}")
