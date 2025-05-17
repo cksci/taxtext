@@ -83,11 +83,11 @@ while (<IN>) {
         my $delta_c = $cost - $cost_new;
 
         if (abs($delta_q) > 1e-3) {
-          warn "Warning: Symbol '$symbol' has quantity $qty in portfolio tt but $qty_new in gains tt\n";
+          warn "# Warning: Symbol '$symbol' has quantity $qty in portfolio tt but $qty_new in gains tt\n";
           $flag = 0;
         }
         if (abs($delta_c) > 1e-3) {
-          warn "Warning: Symbol '$symbol' has cost $cost in portfolio tt but $cost_new in gains tt\n";
+          warn "# Warning: Symbol '$symbol' has cost $cost in portfolio tt but $cost_new in gains tt\n";
           $flag = 0;
         }
 
@@ -96,7 +96,7 @@ while (<IN>) {
         }
         
       } else {
-        warn "Warning: Symbol '$symbol' is in portfolio tt but not gains tt\n";
+        warn "# Warning: Symbol '$symbol' is in portfolio tt but not gains tt\n";
       }
     }
   }
@@ -106,6 +106,6 @@ while (<IN>) {
 
 foreach my $symbol (sort keys %tt_found) {
   unless ($tt_found{$symbol}) {
-    warn "Warning: Symbol '$symbol' exists in gains tt but not in portfolio tt\n";
+    warn "# Warning: Symbol '$symbol' exists in gains tt but not in portfolio tt\n";
   }
 }

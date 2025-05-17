@@ -7,7 +7,6 @@ use Getopt::Long;
 GetOptions(\%OPT,"sa","tv","fg","options_too","options_only");
 $OPT{sa} = 1 unless (exists $OPT{tv} || exists $OPT{fg});
 
-use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -17,6 +16,9 @@ $num++ if (exists $OPT{sa});
 $num++ if (exists $OPT{tv});
 $num++ if (exists $OPT{fg});
 die "Error: Specify only one of -sa, -tv, -fg!\n" if ($num > 1);
+
+my $USAGE = "$0 [-sa|-fg|-tv] <pt text> ...\n";
+die $USAGE unless (@ARGV > 0);
 
 my @fhs;
 if (@ARGV) {

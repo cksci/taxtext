@@ -122,7 +122,7 @@ foreach my $fh (@fhs) {
               my $delta_days = $epoch_days - $last_gain{$symbol}{sell_days_epoch};
               if ($delta_days < 30) {
                 if ($last_gain{$symbol}{gain} < 0) {
-                  warn "Warning: Possible existing position superficial loss on $date_settle with add of $quantity of symbol $symbol at price $price, $last_gain{$symbol}{quantity} of which were previously sold within 30 calendar days on $last_gain{$symbol}{date_sell} at loss of $last_gain{$symbol}{gain} and average cost $last_gain{$symbol}{average_price}\n";
+                  warn "# Warning: Possible existing position superficial loss on $date_settle with add of $quantity of symbol $symbol at price $price, $last_gain{$symbol}{quantity} of which were previously sold within 30 calendar days on $last_gain{$symbol}{date_sell} at loss of $last_gain{$symbol}{gain} and average cost $last_gain{$symbol}{average_price}\n";
                 }
               }
             }
@@ -144,7 +144,7 @@ foreach my $fh (@fhs) {
             my $delta_days = $epoch_days - $last_gain{$symbol}{sell_days_epoch};
             if ($delta_days < 30) {
               if ($last_gain{$symbol}{gain} < 0) {
-                warn "Warning: Possible new position superficial loss on $date_settle with add of $quantity of symbol $symbol at price $price, $last_gain{$symbol}{quantity} of which were previously sold within 30 calendar days on $last_gain{$symbol}{date_sell} at loss of $last_gain{$symbol}{gain} and average cost $last_gain{$symbol}{average_price}\n";
+                warn "# Warning: Possible new position superficial loss on $date_settle with add of $quantity of symbol $symbol at price $price, $last_gain{$symbol}{quantity} of which were previously sold within 30 calendar days on $last_gain{$symbol}{date_sell} at loss of $last_gain{$symbol}{gain} and average cost $last_gain{$symbol}{average_price}\n";
               }
             }
           }
@@ -263,7 +263,7 @@ foreach my $fh (@fhs) {
         $db{$symbol}{average_price} = fmt_money($db{$symbol}{average_price}/$factor);
         push @{$db{$symbol}{transact}}, $_;
 
-        warn "Warning: ADJUSTQ $symbol cost basis from $tmp by $factor to $db{$symbol}{average_price}\n";
+        warn "# Warning: ADJUSTQ $symbol cost basis from $tmp by $factor to $db{$symbol}{average_price}\n";
       } else {
         warn "Error: Found stock quantity adjust for symbol '$symbol' at date '$date' but no position exists\n";
       }
@@ -309,7 +309,7 @@ foreach my $symbol (sort keys %db) {
   if ($symbol =~ /\.(\w+)$/) {
     $curr = $1;
   } else {
-    warn "Warning: Couldn't determine currency of symbol '$symbol'\n";
+    warn "# Warning: Couldn't determine currency of symbol '$symbol'\n";
     next;
   }
 
@@ -319,25 +319,25 @@ foreach my $symbol (sort keys %db) {
 unless (exists $OPT{quiet}) {
   my $tot_gain = 0;
   foreach my $curr (sort keys %tot_gain) {
-    warn "Info: Total $curr gain is $tot_gain{$curr}\n";
+    warn "# Info: Total $curr gain is $tot_gain{$curr}\n";
     $tot_gain += $tot_gain{$curr};
   }
-  warn "Info: Total gain is $tot_gain\n";
+  warn "# Info: Total gain is $tot_gain\n";
   warn "\n";
 
   my $tot_options_gain = 0;
   foreach my $curr (sort keys %tot_options_gain) {
-    warn "Info: Total $curr options gain is $tot_options_gain{$curr}\n";
+    warn "# Info: Total $curr options gain is $tot_options_gain{$curr}\n";
     $tot_options_gain += $tot_options_gain{$curr};
   }
-  warn "Info: Total option gain is $tot_options_gain\n";
+  warn "# Info: Total option gain is $tot_options_gain\n";
   warn "\n";
 
   my $tot_div = 0;
   foreach my $curr (sort keys %tot_div) {
-    warn "Info: Total $curr options gain is $tot_div{$curr}\n";
+    warn "# Info: Total $curr dividend gain is $tot_div{$curr}\n";
     $tot_div += $tot_div{$curr};
   }
-  warn "Info: Total dividend is $tot_div\n";
+  warn "# Info: Total dividend is $tot_div\n";
   warn "\n";
 }

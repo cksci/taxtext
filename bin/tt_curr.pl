@@ -66,7 +66,7 @@ foreach my $fh (@fhs) {
         if (exists $usdcad{$date}) {
           $usdcad = $usdcad{$date};
         } else {
-          warn "Warning: No USDCAD for date '$date'\n";
+          warn "# Warning: No USDCAD for date '$date'\n";
           next;
         }
         my $value_cad = fmt_money($usdcad*$value,2);
@@ -96,7 +96,7 @@ foreach my $fh (@fhs) {
         if (exists $usdcad{$date_settle}) {
           $usdcad = $usdcad{$date_settle};
         } else {
-          warn "Warning: No USDCAD for date '$date_settle'\n";
+          warn "# Warning: No USDCAD for date '$date_settle'\n";
           next;
         }
 
@@ -123,7 +123,7 @@ foreach my $fh (@fhs) {
         if (exists $usdcad{$date}) {
           $usdcad = $usdcad{$date};
         } else {
-          warn "Warning: No USDCAD for date '$date'\n";
+          warn "# Warning: No USDCAD for date '$date'\n";
           next;
         }
 
@@ -154,7 +154,7 @@ foreach my $fh (@fhs) {
         if (exists $usdcad{$date}) {
           $usdcad = $usdcad{$date};
         } else {
-          warn "Warning: No USDCAD for date '$date'\n";
+          warn "# Warning: No USDCAD for date '$date'\n";
           next;
         }
 

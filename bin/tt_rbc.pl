@@ -96,7 +96,7 @@ foreach my $file (@ARGV) {
       } elsif ($desc =~ /ASN\s+\-\s+CALL/i) {
         $price = $zero;
       } else {
-        warn "Warning: Couldn't determine retraction price for following line:\n  $_\n";
+        warn "# Warning: Couldn't determine retraction price for following line:\n  $_\n";
         next;
       }
 
@@ -177,7 +177,7 @@ foreach my $file (@ARGV) {
         if ($quantity > 0) {
           print OUT "ADJUSTQ $date $date_settle $symbol.$currency $quantity $currency\n";
         } else {
-          warn "Warning: Ignoring ADJUSTQ on line: $_\n";
+          warn "# Warning: Ignoring ADJUSTQ on line: $_\n";
         }
       } elsif ($desc =~ /(INTEREST|STOCK)\s+SPINOFF/) {
         print OUT "BUYSELL $date $date_settle $symbol.$currency $quantity $currency $zero $zero $zero\n"; # Note: No fee for expiry
@@ -186,7 +186,7 @@ foreach my $file (@ARGV) {
     } elsif ($activity =~ /transfer|taxes|fees/i) {
       # Ignore
     } else {
-      warn "Warning: Don't know how to parse:\n  $_\n";
+      warn "# Warning: Don't know how to parse:\n  $_\n";
     }
   }
 }
