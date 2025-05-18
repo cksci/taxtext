@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line);
+our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line tt_get_latest_date tt_get_date);
 
 sub fmt_money {
   my $value = shift;
@@ -261,6 +261,36 @@ sub tt_parse_cost_line {
   my @bits = split(/\s+/,$line);
   # COST 5/14/2025 5/14/2025 NVDA.CAD 1000 CAD 30.89085 0.00000 30890.85000
   return (what=>$bits[0], date=>$bits[1], date_settle=>$bits[2], symbol=>$bits[3], quantity=>$bits[4], currency=>$bits[5], cost=>$bits[6], fee=>$bits[7], cost_total=>$bits[8]);
+}
+
+sub tt_get_latest_date {
+  my @dates = @_;
+  use Time::Local;
+
+  my $latest_date = '';
+  my $latest_epoch = 0;
+
+  foreach my $date (@dates) {
+    my ($mm, $dd, $yyyy) = split('/', $date);
+    my $epoch = timelocal(0, 0, 12, $dd, $mm - 1, $yyyy);
+
+    if ($epoch > $latest_epoch) {
+      $latest_epoch = $epoch;
+      $latest_date = $date;
+    }
+  }
+
+  return $latest_date;
+}
+
+sub tt_get_date {
+  use Time::Local;
+
+  my ($sec,$min,$hour,$mday,$mon,$year) = localtime();
+  $mon  += 1;
+  $year += 1900;
+
+  return sprintf("%d/%d/%d",$mon,$mday,$year);
 }
 
 1;

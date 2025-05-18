@@ -17,15 +17,18 @@ elif len(sys.argv) == 3:
 
     date_arg  = sys.argv[2]
     date2_str = datetime.today().date()
-    date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
+    #date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
+    date_str  = datetime.strptime(date_arg, "%m/%d/%Y").date()
 
 elif len(sys.argv) == 4:
 
     date_arg  = sys.argv[2]
     date2_arg = sys.argv[3]
 
-    date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
-    date2_str = datetime.strptime(date2_arg, "%Y-%m-%d").date()
+    #date_str  = datetime.strptime(date_arg, "%Y-%m-%d").date()
+    #date2_str = datetime.strptime(date2_arg, "%Y-%m-%d").date()
+    date_str  = datetime.strptime(date_arg, "%m/%d/%Y").date()
+    date2_str = datetime.strptime(date2_arg, "%m/%d/%Y").date()
 
 #print(f"{date_str} to {date2_str}")
 
@@ -35,6 +38,7 @@ end_date = pd.to_datetime(date2_str)
 #print(end_date)
 
 ticker = yf.Ticker(symbol)
+currency = ticker.info.get("currency")
 
 fetch_start = start_date - pd.Timedelta(days=3)
 fetch_end = end_date + pd.Timedelta(days=3)
@@ -57,4 +61,5 @@ else:
     else:
         #print(df_filtered[["Open", "High", "Low", "Close", "Volume"]])
         for idx, row in df_filtered.iterrows():
-            print(f"{idx.date()} {row['Close']:.2f}")
+            #print(f"{idx.date()} {row['Close']:.2f}")
+            print(f"{symbol} {currency} {idx.strftime('%m/%d/%Y')} {row['Close']:.2f}")
