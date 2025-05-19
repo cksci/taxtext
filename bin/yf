@@ -47,7 +47,7 @@ df = ticker.history(start=fetch_start, end=fetch_end)
 #print(df)
 
 if df.empty:
-    print(f"No trading data found for {symbol} between {start_date.date()} and {end_date.date()}", file=sys.err)
+    print(f"No trading data found for {symbol} between {start_date.date()} and {end_date.date()}", file=sys.stderr)
 else:
     # Fix: Localize comparison dates
     if df.index.tz is not None:
@@ -57,7 +57,7 @@ else:
     df_filtered = df[(df.index >= start_date) & (df.index <= end_date)]
 
     if df_filtered.empty:
-        print(f"No trading data found within range", file=sys.err)
+        print(f"No trading data found within range", file=sys.stderr)
     else:
         #print(df_filtered[["Open", "High", "Low", "Close", "Volume"]])
         for idx, row in df_filtered.iterrows():
