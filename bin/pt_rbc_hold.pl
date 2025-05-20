@@ -45,6 +45,7 @@ foreach my $file (@ARGV) {
     my $cost   = $bits[$cols{"Average Cost"}];
     my $curr   = $bits[$cols{"Currency"}];
     $symbol    = "$symbol.$curr";
+    next unless (abs($qty) > 1e-3);
 
     my $symbol_yahoo = $symbol;
     $symbol_yahoo =~ s/\.PR\./-P/;

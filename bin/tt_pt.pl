@@ -1,6 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
+my %OPT;
+use Getopt::Long;
+GetOptions(\%OPT,"account=s");
 open(OUT,"|tabulate.pl") || die "Error: Can't pipe to 'tabulate.pl': $!\n";
 
 my @fhs;
@@ -25,8 +28,10 @@ foreach my $fh (@fhs) {
       $symbol_yahoo =~ s/\.UN/-UN/;
       $symbol_yahoo =~ s/\.CAD/.TO/;
       $symbol_yahoo =~ s/\.USD//;
+      my $account = "-";
+      $account = $OPT{account} if (exists $OPT{account});
 
-      print OUT "HOLD - $symbol $symbol_yahoo $curr OPEN ON -  - $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
+      print OUT "HOLD $account $symbol $symbol_yahoo $curr OPEN ON -  - $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
     }
   }
 }

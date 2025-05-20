@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line tt_get_latest_date tt_get_date);
+our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line tt_get_latest_date tt_get_date tt_make_yahoo_symbol );
 
 sub fmt_money {
   my $value = shift;
@@ -291,6 +291,15 @@ sub tt_get_date {
   $year += 1900;
 
   return sprintf("%d/%d/%d",$mon,$mday,$year);
+}
+
+sub tt_make_yahoo_symbol {
+  my $symbol_yahoo = shift;
+  $symbol_yahoo =~ s/\.PR\./-P/;
+  $symbol_yahoo =~ s/\.UN/-UN/;
+  $symbol_yahoo =~ s/\.CAD/.TO/;
+  $symbol_yahoo =~ s/\.USD//;
+  return $symbol_yahoo;
 }
 
 1;

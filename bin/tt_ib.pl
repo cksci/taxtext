@@ -24,7 +24,7 @@ foreach my $file (@ARGV) {
   my %cols;
   while (<IN>) {
     chomp;
-    if (/^Trades,Header/) {
+    if (/^\s*Trades\s*,\s*Header/) {
       my @bits = split(/,/);
       for (my $i=0; $i<@bits; $i++) {
         $cols{$bits[$i]} = $i;
@@ -37,7 +37,7 @@ foreach my $file (@ARGV) {
     chomp;
 
     # TODO: Need to make this smarter since it's also catching forex
-    if (/^Trades.*(Stocks|Options)/) {
+    if (/^\s*Trades\s*,\s*Data\s*,\s*Order\s*,.*(Stocks|Options)/) {
 
       $csv->parse($_);
       my @bits = $csv->fields();
