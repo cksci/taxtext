@@ -17,6 +17,7 @@ my $csv = Text::CSV->new({
 });
 
 open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
 
 foreach my $file (@ARGV) {
   open(IN,$file) || die "Error: Can't read file '$file': $!\n";
@@ -35,20 +36,29 @@ foreach my $file (@ARGV) {
 
   while (<IN>) {
     chomp;
+
     my $curr = "CAD";
     if (s/US\$//g) {
       $curr = "USD";
     }
-    s/\$//g;
 
     $csv->parse($_);
     my @bits = $csv->fields();
-    my $symbol = $bits[$cols{"Symbol"}];
-    my $qty = $bits[$cols{"Quantity"}];
+
+    my $symbol = fmt_symbol($bits[$cols{"Name"}]);
+    my $qty    = $bits[$cols{"Quantity"}];
+
+    next unless ($qty =~ /\d/);
     $qty *= 100;
-    my $cost = $bits[$cols{"Total Cost"}];
-    $cost =~ s/,//g;
-    $cost /= abs($qty);
+
+    my $cost;
+    if (exists $cols{"Total Cost"}) {
+      $cost = $bits[$cols{"Total Cost"}];
+      $cost =~ s/,//g;
+      $cost /= abs($qty);
+    } elsif (exists $cols{"Avg Price"}) {
+      $cost = $bits[$cols{"Avg Price"}];
+    }
 
     if ($symbol =~ /(\S+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(Call|Put)/i) {
       my ($ticker,$strike,$day,$month,$year,$what) = ($1,$2,$3,$4,$5,$6);

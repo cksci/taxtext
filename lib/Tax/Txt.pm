@@ -148,8 +148,9 @@ sub fmt_qty {
 
 sub fmt_symbol {
   my $symbol = shift;
+
   # BCE 15JAN27 34 C
-  if ($symbol =~ /(\S+)\s+(\w+)\s+(\S+)\s+(C|P)/i) {
+  if ($symbol =~ /^\s*(\S+)\s+(\w+)\s+(\S+)\s+(C|P)/i) {
     my ($ticker,$expiry,$strike,$putcall) = ($1,$2,$3,$4);
     $ticker =~ s/\.\w+//; # Ex. RCI.B => RCI
 
@@ -172,6 +173,24 @@ sub fmt_symbol {
     } else {
       die "Error: Can't get option date from '$symbol' with expiry '$expiry'\n";
     }
+
+  } elsif ($symbol =~ /^\s*(\S+)\s+\$(\S+)\s+(\d+)\s+(\w+)\s+(\d+).*(Put|Call)/) {
+    # BULL $12.5 30 May 25 (W) Put 100
+    my ($ticker,$strike,$d,$month_name,$y,$putcall) = ($1,$2,$3,$4,$5,$6);
+    $ticker =~ s/\.\w+//; # Ex. RCI.B => RCI
+    my $m = month_num($month_name);
+    $m = sprintf("%02d",$m);
+    $d = sprintf("%02d",$d);
+    $y = sprintf("%02d",$y);
+
+    $strike = sprintf("%08d",1000*$strike);
+
+    if ($putcall =~ /Put/i) {
+      $putcall = "P";
+    } else {
+      $putcall = "C";
+    }
+    return "${ticker}${y}${m}${d}${putcall}${strike}";
 
   } else {
     return $symbol;
