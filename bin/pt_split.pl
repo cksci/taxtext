@@ -2,9 +2,6 @@
 use warnings;
 use strict;
 
-my %OPT;
-use Getopt::Long;
-
 my $awp = $ARGV[0];
 
 system("pt_export.pl -sa $awp | grep :US > LongUSD_SA.csv");

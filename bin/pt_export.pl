@@ -57,7 +57,7 @@ foreach my $fh (@fhs) {
 
       die "Error: Didn't find header before HOLD lines!\n" if (scalar keys %cols == 0);
 
-      my @bits = split;
+      my @bits   = split;
       my $symbol = $bits[$cols{SYMBOL}];
       my $curr   = $bits[$cols{CURRENCY}];
       my $qty    = $bits[$cols{QUANTITY}];
@@ -108,4 +108,6 @@ foreach my $fh (@fhs) {
     }
   }
 }
-print join(",",@fg) . "\n";
+if (exists $OPT{fg}) {
+  print join(",",@fg) . "\n";
+}

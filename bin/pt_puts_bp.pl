@@ -2,28 +2,30 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
 GetOptions(\%OPT,"account=s");
 
-use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
 
-my $USAGE = "$0 <portfoliott>\n";
+my $USAGE = "$0 <portfolio text> ...\n";
 die $USAGE unless (@ARGV > 0);
 
 my $total_notional = 0;
 my $total_cost     = 0;
 my $total_price    = 0;
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to 'tabulate.pl': $!\n";
+open(OUT,"|$dir/tabulate.pl") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
 print OUT "TICKER EXPIRY NOTIONAL COST PRICE COST_PCT VALUE_PCT CHANGE_PCT ACCOUNT\n";
 
 foreach my $file (@ARGV) {
   open(IN,$file) || die "Error: Can't read file '$file': $!\n";
+
   my %cols;
 
   while (<IN>) {

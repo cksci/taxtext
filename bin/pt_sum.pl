@@ -2,17 +2,18 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
 GetOptions(\%OPT,"year=s");
 
-use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
 
-my $USAGE = "$0 <portfoliotext> ...\n";
+my $USAGE = "$0 <portfolio text> ...\n";
 die $USAGE unless (@ARGV > 0);
 
 my @fhs;
@@ -47,6 +48,7 @@ foreach my $fh (@fhs) {
       die "Error: Didn't find header before CASH lines!\n" if (scalar keys %cols == 0);
 
       my @bits = split;
+
       my $account   = $bits[$cols{ACCOUNT}];
       my $curr      = $bits[$cols{CURRENCY}];
       my $value     = $bits[$cols{VALUE}];
@@ -81,6 +83,7 @@ foreach my $fh (@fhs) {
       die "Error: Didn't find header before HOLD lines!\n" if (scalar keys %cols == 0);
 
       my @bits = split;
+
       my $account      = $bits[$cols{ACCOUNT}];
       my $symbol       = $bits[$cols{SYMBOL}];
       my $symbol_yahoo = $bits[$cols{SYMBOL_YAHOO}];
@@ -145,8 +148,6 @@ foreach my $fh (@fhs) {
     }
   }
 }
-#use Data::Dumper;
-#print Dumper(\%db);
 
 my $total_cash_cad      = 0;
 my $total_cash_usd      = 0;
@@ -164,8 +165,10 @@ my $total_ccd_usd_book  = 0;
 my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
-open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
 print "# All values in CAD\n";
+
+open(OUT,"|$dir/tabulate.pl -r") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
+
 print OUT "| ACCOUNT | \$CAD | \$USD | CCD_CAD | CCD_USD | BOOK | VALUE | TOT_VALUE | GAIN | GAIN% | CCD_CAD% | CCD_USD% | DIV | YIELD% |\n";
 
 foreach my $account (sort keys %db) {

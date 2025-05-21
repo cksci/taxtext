@@ -2,17 +2,18 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
 GetOptions(\%OPT,"account=s");
 
-use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
 
-my $USAGE = "$0 <pt text old> <pt text new>\n";
+my $USAGE = "$0 <portfolio text old> <portfolio text new>\n";
 die $USAGE unless (@ARGV == 2);
 my ($pt_file_old,$pt_file_new) = @ARGV;
 
@@ -62,7 +63,7 @@ while (<IN>) {
 }
 
 open(IN,$pt_file_old) || die "Error: Can't read file '$pt_file_old': $!\n";
-open(OUT,"| tabulate.pl -r | sort -b -k 2,2 -k 5,5 -k 3,3") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tabulate.pl -r | sort -b -k 2,2 -k 5,5 -k 3,3") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
 
 my %cols_old;
 
@@ -127,7 +128,6 @@ while (<IN>) {
         unless ($flag) {
           print OUT "HOLD $account $symbol $symbol_yahoo $curr $status $risk $sector $type $qty_new $cost_new $price $change $gain_pct $div $yield $div_tot $div_tot_cad $book $value $gain $book_cad $value_cad $gain_cad\n"; 
         }
-
 
       } else {
         

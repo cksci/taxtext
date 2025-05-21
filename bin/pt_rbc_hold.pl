@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -10,11 +11,14 @@ use Tax::Txt;
 my $USAGE = "$0 <RBC holdings csv> ...\n";
 die $USAGE unless (@ARGV > 0);
 
-open(OUT,"|tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tabulate.pl -r") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
 
 print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
+
 foreach my $file (@ARGV) {
+
   open(IN,$file) || die "Error: Can't read file '$file': $!\n";
+
   my $base = basename($file);
   $base =~ s/\.\w+//g;
   $base =~ tr/a-z/A-Z/;
@@ -45,6 +49,7 @@ foreach my $file (@ARGV) {
     my $cost   = $bits[$cols{"Average Cost"}];
     my $curr   = $bits[$cols{"Currency"}];
     $symbol    = "$symbol.$curr";
+
     next unless (abs($qty) > 1e-3);
 
     my $symbol_yahoo = $symbol;
