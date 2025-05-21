@@ -4,7 +4,24 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT = qw(fmt_money fmt_money2 map_ticker calc_fee convert_date month_num get_date_year fmt_qty fmt_symbol tt_parse_header tt_is_option tt_parse_cost_line tt_get_latest_date tt_get_date tt_make_yahoo_symbol );
+our @EXPORT = qw(
+  fmt_money
+  fmt_money2
+  map_ticker
+  calc_fee
+  convert_date
+  month_num
+  get_date_year
+  fmt_qty
+  fmt_symbol
+  tt_parse_header
+  tt_is_option
+  tt_parse_cost_line
+  tt_get_latest_date
+  tt_get_date
+  tt_make_yahoo_symbol
+  tt_option_parse
+);
 
 sub fmt_money {
   my $value = shift;
@@ -319,6 +336,19 @@ sub tt_make_yahoo_symbol {
   $symbol_yahoo =~ s/\.CAD/.TO/;
   $symbol_yahoo =~ s/\.USD//;
   return $symbol_yahoo;
+}
+
+sub tt_option_parse {
+  my $symbol = shift;
+
+  if ($symbol =~ /^\s*(\w+)(\d\d)(\d\d)(\d\d)(P|C)(\d\d\d\d\d\d\d\d)/) {
+    my ($symbol,$year,$month,$day,$putcall,$strike) = ($1,$2,$3,$4,$5,$6);
+    $strike /= 1000.0;
+    return ($symbol,$year,$month,$day,$putcall,$strike);
+
+  } else {
+    die "Error: Can't parse option '$symbol'\n";
+  }
 }
 
 1;
