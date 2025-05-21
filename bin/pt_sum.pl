@@ -309,3 +309,4 @@ foreach my $sector (sort keys %dbs) {
   $total = fmt_money2($total);
   print OUT "$str | $total |\n";
 }
+print OUT "\n";

@@ -273,6 +273,8 @@ sub tt_parse_header {
       $cols{$col} = $i;
     } elsif ($col eq "GAIN_CAD") {
       $cols{$col} = $i;
+    } elsif ($col eq "SCALER") {
+      $cols{$col} = $i;
     } else {
       die "Error: Found unknown column '$col' when parsing header '$line'\n";
     }

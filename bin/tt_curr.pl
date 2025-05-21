@@ -70,9 +70,11 @@ foreach my $fh (@fhs) {
           next;
         }
         my $value_cad = fmt_money($usdcad*$value,2);
-        print OUT "CASH $account $currency $value $value_cad\n";
+        $usdcad       = fmt_money($usdcad,5);
+        print OUT "CASH $account $currency $value $value_cad $usdcad\n";
       } else {
-        print OUT "CASH $account $currency $value $value\n";
+        my $usdcad = fmt_money(1.0,5);
+        print OUT "CASH $account $currency $value $value $usdcad\n";
       }
 
     } elsif (/^\s*(BUYSELL|COST)/i) {
