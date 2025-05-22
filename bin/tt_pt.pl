@@ -1,10 +1,13 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
+use File::Basename;
+my $dir = dirname($0);
+
 my %OPT;
 use Getopt::Long;
 GetOptions(\%OPT,"account=s");
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to 'tabulate.pl': $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 my @fhs;
 

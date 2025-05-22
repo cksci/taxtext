@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -16,7 +17,7 @@ my $csv = Text::CSV->new({
   auto_diag => 1,   # Report parsing errors
 });
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 foreach my $file (@ARGV) {
   open(IN,$file) || die "Error: Can't read file '$file': $!\n";

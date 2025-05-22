@@ -2,6 +2,8 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
@@ -22,7 +24,7 @@ if (@ARGV) {
   push @fhs, *STDIN;
 }
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 my %db;
 my %last_gain;

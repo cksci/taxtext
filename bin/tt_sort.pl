@@ -2,8 +2,9 @@
 use warnings;
 use strict;
 use Time::Local;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -25,7 +26,7 @@ foreach my $file (@ARGV) {
   }
 }
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 foreach my $epoch (sort {$a<=>$b} keys %db) {
   print OUT @{$db{$epoch}};
 }

@@ -166,10 +166,12 @@ my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
 print "# All values in CAD\n";
+print "# Date: " . `date`;
+print "\n";
 
-open(OUT,"|$dir/tabulate.pl -r") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
+open(OUT,"|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
-print OUT "| ACCOUNT | \$CAD | \$USD | CCD_CAD | CCD_USD | BOOK | VALUE | TOT_VALUE | GAIN | GAIN% | CCD_CAD% | CCD_USD% | DIV | YIELD% |\n";
+print OUT "ACCOUNT \$CAD \$USD CCD_CAD CCD_USD BOOK VALUE TOT_VALUE GAIN GAIN% CCD_CAD% CCD_USD% DIV YIELD%\n";
 
 foreach my $account (sort keys %db) {
 
@@ -234,7 +236,7 @@ foreach my $account (sort keys %db) {
   $yield_pct        = fmt_money2($yield_pct);
   $gain_pct         = fmt_money2($gain_pct);
 
-  print OUT "| $account | $cash_cad | $cash_usd | $ccd_cad_value | $ccd_usd_value | $book | $value | $value_all | $gain | $gain_pct | $ccd_cad_gain_pct | $ccd_usd_gain_pct | $div_tot | $yield_pct |\n";
+  print OUT "$account $cash_cad $cash_usd $ccd_cad_value $ccd_usd_value $book $value $value_all $gain $gain_pct $ccd_cad_gain_pct $ccd_usd_gain_pct $div_tot $yield_pct\n";
 }
 
 my $total_ccd_cad_gain_pct = $zero;
@@ -270,43 +272,94 @@ my $total_ccd_cad_value_pct = fmt_money2(100.0*$total_ccd_cad_value/$total_value
 my $total_ccd_usd_value_pct = fmt_money2(100.0*$total_ccd_usd_value/$total_value_with_cash);
 my $total_value_pct         = fmt_money2(100.0*$total_value/$total_value_with_cash);
 
-$total_cash_cad         = fmt_money2($total_cash_cad,0);
-$total_cash_usd         = fmt_money2($total_cash_usd,0);
-$total_ccd_cad_value    = fmt_money2($total_ccd_cad_value,0);
-$total_ccd_usd_value    = fmt_money2($total_ccd_usd_value,0);
-$total_book             = fmt_money2($total_book,0);
-$total_value            = fmt_money2($total_value,0);
-$total_value_with_cash  = fmt_money2($total_value_with_cash,0);
-$total_gain             = fmt_money2($total_gain,0);
-$total_gain_pct         = fmt_money2($total_gain_pct);
-$total_ccd_cad_gain_pct = fmt_money2($total_ccd_cad_gain_pct);
-$total_ccd_usd_gain_pct = fmt_money2($total_ccd_usd_gain_pct);
-$total_div_tot          = fmt_money2($total_div_tot,0);
-$total_yield_pct        = fmt_money2($total_yield_pct);
+my $total_cash_cad_fmt         = fmt_money2($total_cash_cad,0);
+my $total_cash_usd_fmt         = fmt_money2($total_cash_usd,0);
+my $total_ccd_cad_value_fmt    = fmt_money2($total_ccd_cad_value,0);
+my $total_ccd_usd_value_fmt    = fmt_money2($total_ccd_usd_value,0);
+my $total_book_fmt             = fmt_money2($total_book,0);
+my $total_value_fmt            = fmt_money2($total_value,0);
+my $total_value_with_cash_fmt  = fmt_money2($total_value_with_cash,0);
+my $total_gain_fmt             = fmt_money2($total_gain,0);
+my $total_gain_pct_fmt         = fmt_money2($total_gain_pct);
+my $total_ccd_cad_gain_pct_fmt = fmt_money2($total_ccd_cad_gain_pct);
+my $total_ccd_usd_gain_pct_fmt = fmt_money2($total_ccd_usd_gain_pct);
+my $total_div_tot_fmt          = fmt_money2($total_div_tot,0);
+my $total_yield_pct_fmt        = fmt_money2($total_yield_pct);
 
-print OUT "| TOTAL | $total_cash_cad | $total_cash_usd | $total_ccd_cad_value | $total_ccd_usd_value | $total_book | $total_value | $total_value_with_cash | $total_gain | $total_gain_pct | $total_ccd_cad_gain_pct | $total_ccd_usd_gain_pct | $total_div_tot | $total_yield_pct |\n";
-print OUT "| TOTAL% | $total_cash_cad_pct | $total_cash_usd_pct | $total_ccd_cad_value_pct | $total_ccd_usd_value_pct | - | $total_value_pct | 100.00 | - | - | - | - | - | - |\n";
-print OUT "\n";
+print OUT "TOTAL $total_cash_cad_fmt $total_cash_usd_fmt $total_ccd_cad_value_fmt $total_ccd_usd_value_fmt $total_book_fmt $total_value_fmt $total_value_with_cash_fmt $total_gain_fmt $total_gain_pct_fmt $total_ccd_cad_gain_pct_fmt $total_ccd_usd_gain_pct_fmt $total_div_tot_fmt $total_yield_pct_fmt\n";
+print OUT "TOTAL% $total_cash_cad_pct $total_cash_usd_pct $total_ccd_cad_value_pct $total_ccd_usd_value_pct - $total_value_pct 100.00 - - - - - -\n";
+close(OUT);
+print "\n";
 
-open(OUT,"| tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
-my $str = "| SECTOR";
+
+### Print out sector total values
+
+open(OUT,"|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
+
+my $str = "SECTOR";
 foreach my $account (sort keys %accounts) {
-  $str .= " | $account";
+  $str .= " $account";
 }
-print OUT "$str | TOTAL |\n";
+print OUT "$str TOTAL\n";
 
 foreach my $sector (sort keys %dbs) {
+
   my $total = 0;
-  my $str = "| $sector";
   foreach my $account (sort keys %accounts) {
     if (exists $dbs{$sector}{$account}) {
-      $str .= " | " . fmt_money2($dbs{$sector}{$account});
       $total += $dbs{$sector}{$account}; 
-    } else {
-      $str .= " | $zero";
     }
   }
-  $total = fmt_money2($total);
-  print OUT "$str | $total |\n";
+
+  my $str = "$sector";
+  foreach my $account (sort keys %accounts) {
+    if (exists $dbs{$sector}{$account}) {
+      $str .= " " . fmt_money2($dbs{$sector}{$account},0);
+    } else {
+      $str .= " $zero";
+    }
+  }
+  $total = fmt_money2($total,0);
+  print OUT "$str $total\n";
 }
-print OUT "\n";
+close(OUT);
+print "\n";
+
+
+### Print out sector percentages
+
+open(OUT,"|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
+
+$str = "SECTOR";
+foreach my $account (sort keys %accounts) {
+  $str .= " $account";
+}
+print OUT "$str TOTAL\n";
+
+foreach my $sector (sort keys %dbs) {
+
+  my $total = 0;
+  foreach my $account (sort keys %accounts) {
+    if (exists $dbs{$sector}{$account}) {
+      $total += $dbs{$sector}{$account}; 
+    }
+  }
+
+  my $str = "$sector";
+  foreach my $account (sort keys %accounts) {
+    my $pct = "0.00";
+    if (exists $dbs{$sector}{$account}) {
+      if ($total > 0) {
+        $pct = sprintf("%.2f",100.0*$dbs{$sector}{$account}/$total);
+      }
+      $str .= " $pct%";
+    } else {
+      $str .= " $pct%";
+    }
+  }
+
+  my $pct = sprintf("%.2f",100.0*$total/$total_value_with_cash);
+  print OUT "$str $pct%\n";
+}
+close(OUT);
+print "\n";

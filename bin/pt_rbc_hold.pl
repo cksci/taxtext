@@ -11,7 +11,7 @@ use Tax::Txt;
 my $USAGE = "$0 <RBC holdings csv> ...\n";
 die $USAGE unless (@ARGV > 0);
 
-open(OUT,"|$dir/tabulate.pl -r") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
+open(OUT,"|$dir/tt_tab.pl -r") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
 

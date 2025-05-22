@@ -20,7 +20,7 @@ my $total_notional = 0;
 my $total_cost     = 0;
 my $total_price    = 0;
 
-open(OUT,"|$dir/tabulate.pl") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
+open(OUT,"|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 print OUT "TICKER EXPIRY NOTIONAL COST PRICE COST_PCT VALUE_PCT CHANGE_PCT ACCOUNT\n";
 
 foreach my $file (@ARGV) {
@@ -106,3 +106,5 @@ $total_cost     = fmt_money2($total_cost,0);
 $total_price    = fmt_money2($total_price,0);
 
 print OUT "TOTAL - $total_notional $total_cost $total_price $total_cost_pct% $total_price_pct% $pct_change% -\n";
+close(OUT);
+print "\n";

@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -11,7 +12,7 @@ my $USAGE = "$0 <RBC Activity csv> ...\n";
 die $USAGE unless (@ARGV > 0);
 
 # TODO: Date order should be auto-detected not assumed
-open(OUT,"|reverse.pl|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/reverse.pl | $dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 foreach my $file (@ARGV) {
   open(IN,$file) || die "Error: Can't read file '$file': $!\n";

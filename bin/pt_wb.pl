@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -16,7 +17,7 @@ my $csv = Text::CSV->new({
   auto_diag => 1,   # Report parsing errors
 });
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 print OUT "HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD\n";
 
 foreach my $file (@ARGV) {
@@ -25,7 +26,7 @@ foreach my $file (@ARGV) {
   my %cols;
   while (<IN>) {
     chomp;
-    if (/^Symbol/) {
+    if (/Symbol,/) {
       my @bits = split(/,/);
       for (my $i=0; $i<@bits; $i++) {
         $cols{$bits[$i]} = $i;
@@ -52,13 +53,13 @@ foreach my $file (@ARGV) {
     $qty *= 100;
 
     my $cost;
-    if (exists $cols{"Total Cost"}) {
+    if (exists $cols{"Avg Price"}) {
+      $cost = $bits[$cols{"Avg Price"}];
+    } elsif (exists $cols{"Total Cost"}) {
       $cost = $bits[$cols{"Total Cost"}];
       $cost =~ s/,//g;
       $cost /= abs($qty);
-    } elsif (exists $cols{"Avg Price"}) {
-      $cost = $bits[$cols{"Avg Price"}];
-    }
+    } 
 
     if ($symbol =~ /(\S+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(Call|Put)/i) {
       my ($ticker,$strike,$day,$month,$year,$what) = ($1,$2,$3,$4,$5,$6);

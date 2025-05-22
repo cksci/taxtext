@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -30,7 +31,7 @@ if (@ARGV) {
   push @fhs, *STDIN;
 }
 
-open(OUT,"|tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl -r") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 foreach my $fh (@fhs) {
   my %cols;

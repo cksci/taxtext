@@ -120,7 +120,7 @@ def update_db(file_path):
             print(f"# Info: Can't get symbol {symbol_yahoo} price attribute", file=sys.stderr)
 
         new_change = new_price-cost
-        if price > 0 and abs(new_price/price) > 1.005:
+        if price > 0 and abs(new_price/price-1) > 1.005:
           delta_pct = 100.0*(new_price/price-1)
           print(f"# Info: Price changed from {price:.4f} to {new_price:.4f} ({delta_pct:.2f}%) for symbol {symbol_yahoo}", file=sys.stderr)
 

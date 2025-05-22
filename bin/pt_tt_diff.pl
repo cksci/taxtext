@@ -2,6 +2,8 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
@@ -32,7 +34,7 @@ while (<IN>) {
 my %cols;
 
 open(IN,$pt_file) || die "Error: Can't read file '$pt_file': $!\n";
-open(OUT,"|tabulate.pl -r") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl -r") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 while (<IN>) {
 

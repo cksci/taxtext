@@ -2,8 +2,9 @@
 use warnings;
 use strict;
 use Time::Local;
-
 use File::Basename;
+my $dir = dirname($0);
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -31,7 +32,7 @@ while (<IN>) {
   }
 }
 
-open(OUT,"|tabulate.pl") || die "Error: Can't pipe to tabulate.pl: $!\n";
+open(OUT,"|$dir/tt_tab.pl") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 foreach my $account (sort keys %db) {
   my $yield = fmt_money(100.0*$db{$account}{div}/$db{$account}{value});
   my $div = fmt_money($db{$account}{div});

@@ -63,7 +63,7 @@ while (<IN>) {
 }
 
 open(IN,$pt_file_old) || die "Error: Can't read file '$pt_file_old': $!\n";
-open(OUT,"|$dir/tabulate.pl -r | sort -b -k 2,2 -k 5,5 -k 3,3") || die "Error: Can't pipe to '$dir/tabulate.pl': $!\n";
+open(OUT,"|$dir/tt_tab.pl -r | sort -b -k 2,2 -k 5,5 -k 3,3") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
 
 my %cols_old;
 

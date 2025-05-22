@@ -2,12 +2,13 @@
 use warnings;
 use strict;
 use Time::Local;
+use File::Basename;
+my $dir = dirname($0);
 
 my %OPT;
 use Getopt::Long;
 GetOptions(\%OPT,"date=s");
 
-use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Tax::Txt;
@@ -109,7 +110,7 @@ foreach my $file (@ARGV) {
 
   my $nav_to = $nav*$cash_w_new/100.0;
 
-  open(OUT, "|tabulate.pl -r") || die;
+  open(OUT, "|$dir/tt_tab.pl -r") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
   print "\n";
   print OUT "TICKER SHARES CURRENCY PRICE_ORG PRICE_NEW CHANGE_PCT NAV_ORG NAV_NEW\n";
 
