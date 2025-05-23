@@ -33,6 +33,8 @@ def update_db(file_path):
     data = read_db(file_path)
     print("HEADER ACCOUNT SYMBOL SYMBOL_YAHOO CURRENCY STATUS RISK SECTOR TYPE QUANTITY COST PRICE CHANGE GAIN_PCT DIV YIELD DIV_TOT DIV_TOT_CAD BOOK VALUE GAIN BOOK_CAD VALUE_CAD GAIN_CAD")
 
+    usdcad = get_usdcad()
+
     for line in data:
 
         # TODO: Update to auto determine column indexes
@@ -66,7 +68,6 @@ def update_db(file_path):
 
         backup = f"HOLD {account} {symbol} {symbol_yahoo} {currency} {status} {risk} {sector} {type} {qty:.4f} {cost:.4f} {price:.4f} {change} {gain_pct:.4f} {div:.4f} {yield_pct:.4f} {div_tot:.4f} {div_tot_cad:.4f} {book:.4f} {value:.4f} {gain:.4f} {book_cad:.4f} {value_cad:.4f} {gain_cad:.4f}"
 
-        usdcad = get_usdcad()
         stock  = yf.Ticker(symbol_yahoo)
         try:
             info = stock.info
