@@ -16,9 +16,9 @@ use Tax::Txt;
 my $USAGE = "$0 [-date %m/%d/%y] <splitcorp text> ...\n";
 die $USAGE unless (@ARGV > 0);
 
-my $date_to = tt_get_date();
+my $date_now = tt_get_date();
 if (exists $OPT{date}) {
-  $date_to = $OPT{date};
+  $date_now = $OPT{date};
 }
 
 my %nav;
@@ -33,6 +33,7 @@ foreach my $file (@ARGV) {
     s/^\s+//;
     s/\s+$//;
     s/\s+/ /g;
+    s/,//g;
 
     if (/^NAV\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/i) {
       my ($date,$nav,$cash_pct,$cs_ticker,$ps1_ticker,$ps2_ticker,$cs_qty,$ps1_qty,$ps2_qty,$cs_price,$ps1_price,$ps2_price,$cs_nom,$ps1_nom,$ps2_nom) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15);
@@ -70,140 +71,183 @@ foreach my $file (@ARGV) {
   }
 
   my $date_w = tt_get_latest_date(keys %weight);
-  my $date_n = tt_get_latest_date(keys %nav);
+  my $date = tt_get_latest_date(keys %nav);
 
-  my $nav        = $nav{$date_n}{nav};
-  my $cash_pct   = $nav{$date_n}{cash_pct};
-  my $cs_ticker  = $nav{$date_n}{cs_ticker};
-  my $ps1_ticker = $nav{$date_n}{ps1_ticker};
-  my $ps2_ticker = $nav{$date_n}{ps2_ticker};
-  my $cs_qty     = $nav{$date_n}{cs_qty};
-  my $ps1_qty    = $nav{$date_n}{ps1_qty};
-  my $ps2_qty    = $nav{$date_n}{ps2_qty};
-  my $cs_price   = $nav{$date_n}{cs_price};
-  my $ps1_price  = $nav{$date_n}{ps1_price};
-  my $ps2_price  = $nav{$date_n}{ps2_price};
-  my $cs_nom     = $nav{$date_n}{cs_nom};
-  my $ps1_nom    = $nav{$date_n}{ps1_nom};
-  my $ps2_nom    = $nav{$date_n}{ps2_nom};
+  my $nav        = $nav{$date}{nav};
+  my $cash_pct   = $nav{$date}{cash_pct};
+  my $cs_ticker  = $nav{$date}{cs_ticker};
+  my $ps1_ticker = $nav{$date}{ps1_ticker};
+  my $ps2_ticker = $nav{$date}{ps2_ticker};
+  my $cs_qty     = $nav{$date}{cs_qty};
+  my $ps1_qty    = $nav{$date}{ps1_qty};
+  my $ps2_qty    = $nav{$date}{ps2_qty};
+  my $cs_price   = $nav{$date}{cs_price};
+  my $ps1_price  = $nav{$date}{ps1_price};
+  my $ps2_price  = $nav{$date}{ps2_price};
+  my $cs_nom     = $nav{$date}{cs_nom};
+  my $ps1_nom    = $nav{$date}{ps1_nom};
+  my $ps2_nom    = $nav{$date}{ps2_nom};
 
   # Scale equity based on new cash weight
   my $cash_w_old   = $weight{$date_w}{CASH};
   my $equity_w_old = 100-$cash_w_old;
 
-  my $cash_w_new   = $cash_pct;
-  my $equity_w_new = 100-$cash_w_new;
+  my $cash_w   = $cash_pct;
+  my $equity_w = 100-$cash_w;
 
-  my $scaler   = sprintf("%.6f",$equity_w_new/$equity_w_old);
-  my $cash_new = sprintf("%.0f",$nav*$cash_w_new/100.0);
+  my $scaler = sprintf("%.6f",$equity_w/$equity_w_old);
+  my $cash   = sprintf("%.0f",$nav*$cash_w/100.0);
 
   print "DATE OLD:            $date_w\n";
   print "CASH WEIGHT OLD:     $cash_w_old\n"; 
   print "EQUITY WEIGHT OLD:   $equity_w_old\n";
-  print "DATE NAV:            $date_n\n";
-  print "CASH WEIGHT NAV:     $cash_w_new\n"; 
-  print "EQUITY WEIGHT NAV:   $equity_w_new\n";
+  print "DATE:                $date\n";
+  print "CASH WEIGHT:         $cash_w\n"; 
+  print "EQUITY WEIGHT:       $equity_w\n";
   print "EQUITY SCALER:       $scaler\n";
+  print "CS TICKER:           $cs_ticker\n";
+  print "PS1 TICKER:          $ps1_ticker\n";
+  print "PS2 TICKER:          $ps2_ticker\n";
 
-  my ($usdcad_n,)  = yf_parse("USDCAD=X",$date_n);
-  my ($usdcad_to,) = yf_parse("USDCAD=X",$date_to);
+  my ($usdcad,)     = yf_parse("USDCAD=X",$date);
+  my ($usdcad_now,) = yf_parse("USDCAD=X",$date_now);
 
-  my $nav_to = $nav*$cash_w_new/100.0;
+  my $nav_now = $cash;
 
-  open(OUT, "|$dir/tt_tab.pl -r") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
+  open(OUT, "|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
   print "\n";
-  print OUT "TICKER SHARES CURRENCY PRICE_ORG PRICE_NEW CHANGE_PCT NAV_ORG NAV_NEW\n";
+  print OUT "TICKER SHARES CURRENCY PRICE_THEN PRICE_NOW NAV_THEN NAV_NOW CHANGE_PCT\n";
 
-  foreach my $ticker (keys %{$weight{$date_w}}) {
+  foreach my $ticker (sort keys %{$weight{$date_w}}) {
     next if ($ticker eq "CASH");
 
-    my $w       = $weight{$date_w}{$ticker};
-    my $w_new   = $scaler*$w;
-    my $nav_new = $nav*$w_new/100.0;
+    my $nav_ticker = $nav*$scaler*$weight{$date_w}{$ticker}/100.0;
 
-    my ($price,$curr)     = yf_parse($ticker,$date_n);
-    my ($price_to,$curr2) = yf_parse($ticker,$date_to);
-    my $change_pct        = sprintf("%.2f",100*($price_to/$price-1));
+    my ($price,$curr)      = yf_parse($ticker,$date);
+    my ($price_now,$curr2) = yf_parse($ticker,$date_now);
+    my $change_pct         = sprintf("%.2f",100*($price_now/$price-1));
 
-    my $shares_n = sprintf("%.0f",$nav_new/$price);
-
+    my $shares;
     my $value;
-    my $value_to;
+    my $value_now;
 
     if ($curr eq "USD") {
-      $shares_n    = sprintf("%.0f",$nav_new/$price/$usdcad_n);
-      $value    = $shares_n*$price*$usdcad_n;
-      $value_to = $shares_n*$price_to*$usdcad_to;
+      $shares    = sprintf("%.0f",$nav_ticker/$price/$usdcad);
+      $value     = $shares*$price*$usdcad;
+      $value_now = $shares*$price_now*$usdcad_now;
     } else {
-      $value    = $shares_n*$price;
-      $value_to = $shares_n*$price_to;
+      $shares    = sprintf("%.0f",$nav_ticker/$price);
+      $value     = $shares*$price;
+      $value_now = $shares*$price_now;
     }
 
-    print OUT "$ticker " . fmt_money2($shares_n,0) . " $curr " . fmt_money2($price,2) . " " . fmt_money2($price_to,2) . " $change_pct " . fmt_money2($value,0) . " " . fmt_money2($value_to,0) . "\n";
+    print OUT "$ticker " . fmt_money2($shares,0) . " $curr " . fmt_money2($price,2) . " " . fmt_money2($price_now,2) . " " . fmt_money2($value,0) . " " . fmt_money2($value_now,0) . " $change_pct\n";
 
-    $nav_to += $value_to;
+    $nav_now += $value_now;
   }
   close(OUT);
   print "\n";
 
-  my $nav_change_pct = sprintf("%.2f",100*($nav_to/$nav-1));
+  my $nav_change_pct = sprintf("%.2f",100*($nav_now/$nav-1));
 
-  print "NAV OLD:             " . fmt_money2($nav,0) . "\n";
-  print "NAV NEW:             " . fmt_money2($nav_to,0) . "\n";
-  print "NAVE CHANGE PCT:     $nav_change_pct\n";
+  my ($cs_price_now,)  = yf_parse($cs_ticker,$date_now);
+  my ($ps1_price_now,) = yf_parse($ps1_ticker,$date_now);
 
-  my ($cs_price_to,)  = yf_parse($cs_ticker,$date_to);
-  my ($ps1_price_to,) = yf_parse($ps1_ticker,$date_to);
+  my $unit_price_now = $cs_price_now + $ps1_price_now;
+  my $value_now      = $cs_qty*$cs_price_now + $ps1_qty*$ps1_price_now;
 
-  my $ps2_price_to = "-";
+  my $ps2_price_now = "-";
   if ($ps2_ticker =~ /\w/) {
-    ($ps2_price_to,) = yf_parse($ps2_ticker,$date_to);
+    ($ps2_price_now,) = yf_parse($ps2_ticker,$date_now);
+    $unit_price_now = $cs_price_now+$ps1_price_now+$ps2_price_now;
+    $value_now      = $cs_qty*$cs_price_now + $ps1_qty*$ps1_price_now + $ps2_qty*$ps2_price_now;
   }
+
+  my $cs_price_change_pct = fmt_money2(100.0*($cs_price_now/$cs_price-1),2);
+  my $ps1_price_change_pct = fmt_money2(100.0*($ps1_price_now/$ps1_price-1),2);
+  my $ps2_price_change_pct = fmt_money2(100.0*($ps2_price_now/$ps2_price-1),2) if ($ps2_ticker =~ /\w/);
+
+  print "CASH:                " . fmt_money2($cash,0) . "\n";
+  print "NAV:                 " . fmt_money2($nav,0) . "\n";
+  print "NAV NOW:             " . fmt_money2($nav_now,0) . "\n";
+  print "NAV CHANGE PCT:      $nav_change_pct\n";
+  print "VALUE NOW:           " . fmt_money2($value_now,0) . "\n";
 
   my $cs_nav_ps  = 0;
   my $ps1_nav_ps = 0;
   my $ps2_nav_ps = "-";
 
-  if ($ps1_qty*$ps1_nom > $nav_to) {
-    $ps1_nav_ps = $nav_to/$ps1_qty;
+  if ($ps1_qty*$ps1_nom > $nav_now) {
+    $ps1_nav_ps = $nav_now/$ps1_qty;
 
   } else {
     $ps1_nav_ps = $ps1_nom;
-    my $nav_to_left = $nav_to - $ps1_nav_ps*$ps1_qty;
+    my $nav_now_left = $nav_now - $ps1_nom*$ps1_qty;
 
     if ($ps2_ticker =~ /\w/) {
-      if ($ps2_qty*$ps2_nom > $nav_to_left) {
-        $ps2_nav_ps = $ps2_nom;
-        $nav_to_left -= $ps2_qty*$ps2_nom;
-
-        $cs_nav_ps = $nav_to_left/$cs_qty;
+      if ($ps2_qty*$ps2_nom > $nav_now_left) {
+        $ps2_nav_ps = $nav_now_left/$ps2_qty;
       } else {
-        $ps2_nav_ps = $nav_to_left/$ps2_qty;
+        $ps2_nav_ps = $ps2_nom;
+        $cs_nav_ps = ($nav_now_left-$ps2_qty*$ps2_nom)/$cs_qty;
       }
     } else {
-      $cs_nav_ps = $nav_to_left/$cs_qty;
+      $cs_nav_ps = $nav_now_left/$cs_qty;
     }
   }
+  my $cs_nav_now  = $cs_nav_ps*$cs_qty;
+  my $ps1_nav_now = $ps1_nav_ps*$ps1_qty;
+  my $ps2_nav_now = $ps2_nav_ps*$ps2_qty if ($ps2_ticker =~ /\w/);
 
-  my $cs_disc = $cs_price_to/$cs_nav_ps;
-  my $ps1_disc = $ps1_price_to/$ps1_nav_ps;
+  my $nav_valu = 100.0*($value_now/$nav_now);
+  my $cs_valu = "999.99";
+  if ($cs_nav_ps > 0) {
+    $cs_valu  = 100.0*($cs_price_now/$cs_nav_ps);
+  }
+  my $ps1_valu = 100.0*($ps1_price_now/$ps1_nav_ps);
 
-  my $ps2_disc = "-";
+  my $ps2_valu = "-";
   if($ps2_ticker =~ /\w/) {
-    $ps2_disc = $ps2_price_to/$ps2_nav_ps;
+    $ps2_valu = 100.0*($ps2_price_now/$ps2_nav_ps);
   }
 
-  print "CS PRICE:            " . fmt_money2($cs_price_to,2) . "\n";
-  print "PS1 PRICE:           " . fmt_money2($ps1_price_to,2) . "\n";
-  print "PS2 PRICE:           " . fmt_money2($ps2_price_to,2) . "\n" if ($ps2_ticker =~ /\w/);
-  print "CS NAV:              " . fmt_money2($cs_nav_ps,2) . "\n";
-  print "PS1 NAV:             " . fmt_money2($ps1_nav_ps,2) . "\n";
-  print "PS2 NAV:             " . fmt_money2($ps2_nav_ps,2) . "\n" if ($ps2_ticker =~ /\w/);
-  print "CS DISCOUNT:         " . fmt_money2($cs_disc,2) . "\n";
-  print "PS1 DISCOUNT:        " . fmt_money2($ps1_disc,2) . "\n";
-  print "PS2 DISCOUNT:        " . fmt_money2($ps2_disc,2) . "\n" if ($ps2_ticker =~ /\w/);
-}
 
+  my $cs_leverage = "999.99";
+  if ($cs_nav_now > 0) {
+    $cs_leverage = $value_now/$cs_nav_now;
+  }
+  print "CS LEVERAGE          " . fmt_money2($cs_leverage,4) . "\n";
+
+  print "CS NAV NOW:          " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
+  print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
+  print "PS2 NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS NOMINAL:          " . fmt_money2($cs_nom,3) . "\n";
+  print "PS1 NOMINAL:         " . fmt_money2($ps1_nom,3) . "\n";
+  print "PS2 NOMINAL:         " . fmt_money2($ps2_nom,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS PRICE THEN:       " . fmt_money2($cs_price,3) . "\n";
+  print "PS1 PRICE THEN:      " . fmt_money2($ps1_price,3) . "\n";
+  print "PS2 PRICE THEN:      " . fmt_money2($ps2_price,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS PRICE NOW:        " . fmt_money2($cs_price_now,3) . "\n";
+  print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
+  print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS PRICE CHANGE:     $cs_price_change_pct%\n";
+  print "PS1 PRICE CHANGE:    $ps1_price_change_pct%\n";
+  print "PS2 PRICE CHANGE:    $ps2_price_change_pct%\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS NAV PER SHARE:    " . fmt_money2($cs_nav_ps,3) . "\n";
+  print "PS1 NAV PER SHARE:   " . fmt_money2($ps1_nav_ps,3) . "\n";
+  print "PS2 NAV PER SHARE:   " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "UNIT PRICE:          " . fmt_money2($unit_price_now,3) . "\n";
+  print "CS VALUATION:        " . fmt_money2($cs_valu,2) . "\n";
+  print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "\n";
+  print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "\n" if ($ps2_ticker =~ /\w/);
+  print "NAV VALUATION:       " . fmt_money2($nav_valu,2) . "\n";
+}
 
 sub yf_parse {
   my ($ticker,$date) = @_;
