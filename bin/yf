@@ -46,6 +46,15 @@ fetch_end = end_date + pd.Timedelta(days=3)
 df = ticker.history(start=fetch_start, end=fetch_end)
 #print(df)
 
+dividends       = ticker.dividends
+dividends.index = dividends.index.tz_localize(None)
+
+div = ticker.info.get("dividendRate", None)
+if div is None:
+    one_year_ago = datetime.now() - timedelta(days=365)
+    recent_dividends = dividends[dividends.index > one_year_ago]
+    div = recent_dividends.sum()
+
 if df.empty:
     print(f"No trading data found for {symbol} between {start_date.date()} and {end_date.date()}", file=sys.stderr)
 else:
@@ -62,4 +71,4 @@ else:
         #print(df_filtered[["Open", "High", "Low", "Close", "Volume"]])
         for idx, row in df_filtered.iterrows():
             #print(f"{idx.date()} {row['Close']:.2f}")
-            print(f"{symbol} {currency} {idx.strftime('%m/%d/%Y')} {row['Close']:.2f}")
+            print(f"{symbol} {currency} {idx.strftime('%m/%d/%Y')} {row['Close']:.2f} {div:.2f}")

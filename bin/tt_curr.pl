@@ -46,6 +46,7 @@ foreach my $fh (@fhs) {
     chomp;
     s/^\s+//;
     s/\s+$//;
+    s/,//g;
 
     if (/^\s*HEADER/) {
       %cols = tt_parse_header($_);
@@ -70,11 +71,13 @@ foreach my $fh (@fhs) {
           warn "# Warning: No USDCAD for date '$date'\n";
           next;
         }
-        my $value_cad = fmt_money($usdcad*$value,2);
+        my $value_cad = fmt_money2($usdcad*$value,2);
         $usdcad       = fmt_money($usdcad,5);
+        $value        = fmt_money2($value,2);
         print OUT "CASH $account $currency $value $value_cad $usdcad\n";
       } else {
-        my $usdcad = fmt_money(1.0,5);
+        my $usdcad = fmt_money2(1.0,5);
+        $value     = fmt_money2($value,2);
         print OUT "CASH $account $currency $value $value $usdcad\n";
       }
 
@@ -163,7 +166,7 @@ foreach my $fh (@fhs) {
 
         my $div_ps_cad  = fmt_money($div_ps*$usdcad);
         my $wh_ps_cad   = fmt_money($wh_ps*$usdcad);
-        my $value_cad   = fmt_money($value*$usdcad);
+        my $value_cad   = fmt_money2($value*$usdcad,0);
         my $div_tot_cad = fmt_money($div_tot*$usdcad);
         print OUT "$what $date $date_settle $symbol $quantity CAD $div_ps_cad $wh_ps_cad $value_cad $div_tot\n";
 

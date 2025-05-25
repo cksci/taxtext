@@ -39,6 +39,7 @@ foreach my $fh (@fhs) {
     chomp;
     s/^\s+//;
     s/\s+$//;
+    s/,//g;
 
     if (/^\s*HEADER/) {
       %cols = tt_parse_header($_);
