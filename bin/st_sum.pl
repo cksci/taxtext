@@ -20,6 +20,12 @@ my $date_now = tt_get_date();
 if (exists $OPT{date}) {
   $date_now = $OPT{date};
 }
+my ($mon_now,$day_now,$year_now);
+if ($date_now=~ /(\d+)\/(\d+)\/(\d+)/) {
+  ($mon_now,$day_now,$year_now) = ($1,$2,$3);
+} else {
+  die;
+}
 
 
 foreach my $file (@ARGV) {
@@ -37,8 +43,8 @@ foreach my $file (@ARGV) {
     s/\s+/ /g;
     s/,//g;
 
-    if (/^NAV\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/i) {
-      my ($date,$nav,$cash_pct,$cs_ticker,$ps1_ticker,$ps2_ticker,$cs_qty,$ps1_qty,$ps2_qty,$cs_price,$ps1_price,$ps2_price,$cs_nom,$ps1_nom,$ps2_nom) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15);
+    if (/^NAV\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/i) {
+      my ($date,$nav,$cash_pct,$cs_ticker,$ps1_ticker,$ps2_ticker,$cs_qty,$ps1_qty,$ps2_qty,$cs_price,$ps1_price,$ps2_price,$cs_nom,$ps1_nom,$ps2_nom,$days,$mon_pct,$annual_pct,$annual_mon) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19);
 
       $nav{$date}{nav}        = $nav;
       $nav{$date}{cash_pct}   = $cash_pct;
@@ -54,6 +60,10 @@ foreach my $file (@ARGV) {
       $nav{$date}{cs_nom}     = $cs_nom;
       $nav{$date}{ps1_nom}    = $ps1_nom;
       $nav{$date}{ps2_nom}    = $ps2_nom;
+      $nav{$date}{days}       = $days;
+      $nav{$date}{mon_pct}    = $mon_pct;
+      $nav{$date}{annual_pct} = $annual_pct;
+      $nav{$date}{annual_mon} = $annual_mon;
 
     } elsif (/^WEIGHT\s+(\S+)\s+(\S+)\s+(\S+)/i) {
       my ($date,$ticker,$pct) = ($1,$2,$3);
@@ -89,6 +99,10 @@ foreach my $file (@ARGV) {
   my $cs_nom     = $nav{$date}{cs_nom};
   my $ps1_nom    = $nav{$date}{ps1_nom};
   my $ps2_nom    = $nav{$date}{ps2_nom};
+  my $days       = $nav{$date}{days};
+  my $mon_pct    = $nav{$date}{mon_pct};
+  my $annual_pct = $nav{$date}{annual_pct};
+  my $annual_mon = $nav{$date}{annual_mon};
 
   # Scale equity based on new cash weight
   my $cash_w_old   = $weight{$date_w}{CASH};
@@ -189,9 +203,7 @@ foreach my $file (@ARGV) {
   print "CASH:                " . fmt_money2($cash,0) . "\n";
   print "NAV:                 " . fmt_money2($nav,0) . "\n";
   print "NAV NOW:             " . fmt_money2($nav_now,0) . "\n";
-  print "NAV CHANGE PCT:      $nav_change_pct\n";
-  print "TOTAL DIVIDEND:      " . fmt_money2($total_div_tot,0) . "\n";
-  print "DIVIDEND YIELD:      " . fmt_money2($total_div_yield,2) . "\n";
+  print "NAV CHANGE PCT:      $nav_change_pct%\n";
   print "VALUE NOW:           " . fmt_money2($value_now,0) . "\n";
 
   my $cs_nav_ps  = 0;
@@ -220,7 +232,6 @@ foreach my $file (@ARGV) {
   my $ps1_nav_now = $ps1_nav_ps*$ps1_qty;
   my $ps2_nav_now = $ps2_nav_ps*$ps2_qty if ($ps2_ticker =~ /\w/);
 
-  my $nav_valu = 100.0*($value_now/$nav_now);
   my $cs_valu = "999.99";
   if ($cs_nav_ps > 0) {
     $cs_valu  = 100.0*($cs_price_now/$cs_nav_ps);
@@ -237,11 +248,8 @@ foreach my $file (@ARGV) {
     $cs_leverage = $value_now/$cs_nav_now;
   }
   print "CS LEVERAGE          " . fmt_money2($cs_leverage,4) . "\n";
+  print "\n";
  
-  print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
-  print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
-  print "PS2 NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
-
   print "CS  NOMINAL:         " . fmt_money2($cs_nom,3) . "\n";
   print "PS1 NOMINAL:         " . fmt_money2($ps1_nom,3) . "\n";
   print "PS2 NOMINAL:         " . fmt_money2($ps2_nom,3) . "\n" if ($ps2_ticker =~ /\w/);
@@ -250,21 +258,14 @@ foreach my $file (@ARGV) {
   print "PS1 PRICE THEN:      " . fmt_money2($ps1_price,3) . "\n";
   print "PS2 PRICE THEN:      " . fmt_money2($ps2_price,3) . "\n" if ($ps2_ticker =~ /\w/);
 
-  print "CS  PRICE NOW:       " . fmt_money2($cs_price_now,3) . "\n";
-  print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
-  print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
-
   print "CS  PRICE CHANGE:    $cs_price_change_pct%\n";
   print "PS1 PRICE CHANGE:    $ps1_price_change_pct%\n";
   print "PS2 PRICE CHANGE:    $ps2_price_change_pct%\n" if ($ps2_ticker =~ /\w/);
+  print "\n";
 
-  print "CS  NAV PER SHARE:   " . fmt_money2($cs_nav_ps,3) . "\n";
-  print "PS1 NAV PER SHARE:   " . fmt_money2($ps1_nav_ps,3) . "\n";
-  print "PS2 NAV PER SHARE:   " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
-
-  print "CS  DIVIDEND:        " . fmt_money2($cs_div,3) . "\n";
-  print "PS1 DIVIDEND:        " . fmt_money2($ps1_div,3) . "\n";
-  print "PS2 DIVIDEND:        " . fmt_money2($ps2_div,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  DIVIDEND PS:     " . fmt_money2($cs_div,3) . "\n";
+  print "PS1 DIVIDEND PS:     " . fmt_money2($ps1_div,3) . "\n";
+  print "PS2 DIVIDEND PS:     " . fmt_money2($ps2_div,3) . "\n" if ($ps2_ticker =~ /\w/);
 
   print "CS  YIELD:           " . fmt_money2(100.0*$cs_div/$cs_price_now,3) . "%\n";
   print "PS1 YIELD:           " . fmt_money2(100.0*$ps1_div/$ps1_price_now,3) . "%\n";
@@ -273,33 +274,103 @@ foreach my $file (@ARGV) {
   my $cs_div_tot  = $cs_div*$cs_qty;
   my $ps1_div_tot = $ps1_div*$ps1_qty;
   my $ps2_div_tot = $ps2_div*$ps2_qty if ($ps2_ticker =~ /\w/);
-  print "CS  TOTAL DIVIDEND:  " . fmt_money2($cs_div_tot,3) . "\n";
-  print "PS1 TOTAL DIVIDEND:  " . fmt_money2($ps1_div_tot,3) . "\n";
-  print "PS2 TOTAL DIVIDEND:  " . fmt_money2($ps2_div_tot,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "NAV DIVIDEND:        " . fmt_money2($total_div_tot,0) . "\n";
+  print "NAV YIELD:           " . fmt_money2($total_div_yield,2) . "%\n";
+  print "CS  PAYOUT:          " . fmt_money2($cs_div_tot,0) . "\n";
+  print "PS1 PAYOUT:          " . fmt_money2($ps1_div_tot,0) . "\n";
+  print "PS2 PAYOUT:          " . fmt_money2($ps2_div_tot,0) . "\n" if ($ps2_ticker =~ /\w/);
 
   my $ps1_div_pct = 100.0*$ps1_div_tot/$total_div_tot;
   my $ps2_div_pct = 100.0*$ps2_div_tot/$total_div_tot if ($ps2_ticker =~ /\w/);
   my $cs_div_pct  = 100.0*$cs_div_tot/$total_div_tot;
-  print "CS  DIVIDEND PCT:    " . fmt_money2($cs_div_pct,2) . "\n";
-  print "PS1 DIVIDEND PCT:    " . fmt_money2($ps1_div_pct,2) . "\n";
-  print "PS2 DIVIDEND PCT:    " . fmt_money2($ps2_div_pct,2) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  PAYOUT RATIO:    " . fmt_money2($cs_div_pct,2) . "%\n";
+  print "PS1 PAYOUT RATIO:    " . fmt_money2($ps1_div_pct,2) . "%\n";
+  print "PS2 PAYOUT RATIO:    " . fmt_money2($ps2_div_pct,2) . "%\n" if ($ps2_ticker =~ /\w/);
+  print "\n";
 
+  print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
+  print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
+  print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  SHARES:          " . fmt_money2($cs_qty,0) . "\n";
+  print "PS1 SHARES:          " . fmt_money2($ps1_qty,0) . "\n";
+  print "PS2 SHARES:          " . fmt_money2($ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS  NAV PS:          " . fmt_money2($cs_nav_ps,3) . "\n";
+  print "PS1 NAV PS:          " . fmt_money2($ps1_nav_ps,3) . "\n";
+  print "PS2 NAV PS:          " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS  PRICE NOW:       " . fmt_money2($cs_price_now,3) . "\n";
+  print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
+  print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS  VALUATION:       " . fmt_money2($cs_valu,2) . "%\n";
+  print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "%\n";
+  print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "%\n" if ($ps2_ticker =~ /\w/);
+
+  my $nav_unit_ps = $cs_nav_ps;
+  $nav_unit_ps   += $ps1_nav_ps;
+  $nav_unit_ps   += $ps2_nav_ps if ($ps2_ticker =~ /\w/);
+  my $unit_valu   = 100.0*($unit_price_now/$nav_unit_ps);
+
+  my $cs_mon_ret = ($mon_pct/100.0)*$nav_unit_ps;
+  my $ps1_mon_ret = $cs_mon_ret;
+  my $ps2_mon_ret = $cs_mon_ret;
+
+  if ($nav_unit_ps > $ps1_nom) {
+    $ps1_mon_ret = $ps1_nom;
+  }
+
+  if ($ps2_ticker =~ /\w/) {
+    if ($nav_unit_ps > $ps2_nom) {
+      $ps2_mon_ret = $ps2_nom;
+    }
+  }
+
+  print "UNIT NAV:            " . fmt_money2($nav_unit_ps,2) . "\n";
   print "UNIT PRICE:          " . fmt_money2($unit_price_now,3) . "\n";
-  print "CS  VALUATION:       " . fmt_money2($cs_valu,2) . "\n";
-  print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "\n";
-  print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "\n" if ($ps2_ticker =~ /\w/);
-  print "NAV VALUATION:       " . fmt_money2($nav_valu,2) . "\n";
+  print "UNIT VALUATION:      " . fmt_money2($unit_valu,2) . "%\n";
+  print "\n";
+
+  my $cs_mon_ret_gain  = 100.0*($cs_mon_ret/$unit_price_now-1);
+  my $ps1_mon_ret_gain = 100.0*($ps1_mon_ret/$ps1_price_now-1);
+  my $ps2_mon_ret_gain = 100.0*($ps2_mon_ret/$ps2_price_now-1) if ($ps2_ticker =~ /\w/);
+
+  print "CS  MON RET PS:      " . fmt_money2($cs_mon_ret,2) . "\n";
+  print "PS1 MON RET PS:      " . fmt_money2($ps1_mon_ret,2) . "\n";
+  print "PS2 MON RET PS:      " . fmt_money2($ps2_mon_ret,2) . "\n" if ($ps2_ticker =~ /\w/);
+
+  print "CS  MON RET GAIN:    " . fmt_money2($cs_mon_ret_gain,2) . "%\n";
+  print "PS1 MON RET GAIN:    " . fmt_money2($ps1_mon_ret_gain,2) . "%\n";
+  print "PS2 MON RET GAIN:    " . fmt_money2($ps2_mon_ret_gain,2) . "%\n" if ($ps2_ticker =~ /\w/);
+
+  my $nav_year_ret_ps = ($annual_pct/100.0)*$cs_nav_ps;
+  $nav_year_ret_ps   += ($annual_pct/100.0)*$ps1_nav_ps;
+  $nav_year_ret_ps   += ($annual_pct/100.0)*$ps2_nav_ps if ($ps2_ticker =~ /\w/);
+
+  my $gain_year_ret = 100.0*($nav_year_ret_ps/$unit_price_now-1);
+  print "ANNUAL RET PS:       " . fmt_money2($nav_year_ret_ps,2) . "\n";
+  print "ANNUAL RET GAIN:     " . fmt_money2($gain_year_ret,2) . "%\n";
+
+  my ($ret_date_mon,$ret_dead_date_mon) = tt_retract_date($year_now,$mon_now,$days);
+  print "MON RET DATE:        $ret_date_mon\n";
+  print "MON RET DEADLINE:    $ret_dead_date_mon\n";
+
+  my ($ret_date_annual,$ret_dead_date_annual) = tt_retract_date($year_now,$annual_mon,$days);
+  print "ANNUAL RET DATE:     $ret_date_annual\n";
+  print "ANNUAL RET DEADLINE: $ret_dead_date_annual\n";
+
   print "\n";
 }
 
 sub yf_parse {
   my ($ticker,$date) = @_;
-  #print "yf $ticker $date $date\n";
-  my $str = `yf $ticker $date $date`;
+  my $cmd = "yf $ticker $date $date\n";
+  my $str = `$cmd`;
   if ($str =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
     my ($t,$c,$d,$v,$div) = ($1,$2,$3,$4,$5);
     return ($v,$c,$div);
   } else {
-    die;
+    die "Error: Got this string '$str' from command '$cmd'\n";
   }
 }

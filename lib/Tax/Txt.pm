@@ -21,6 +21,7 @@ our @EXPORT = qw(
   tt_get_date
   tt_make_yahoo_symbol
   tt_option_parse
+  tt_retract_date
 );
 
 sub fmt_money {
@@ -351,6 +352,38 @@ sub tt_option_parse {
   } else {
     die "Error: Can't parse option '$symbol'\n";
   }
+}
+
+### Takes a year and month and number of business days notice and returns the last business day of the month in Ontario plus the
+### retraction date deadline
+sub tt_retract_date {
+  use Date::Calc qw(:all);
+  use Date::Holidays::CA;
+
+  my $year = shift;
+  my $month = shift;
+  my $num_days = shift;
+
+  my $holidays = Date::Holidays::CA->new({ province => 'ON' });
+
+  my $last_day = Days_in_Month($year, $month);
+  my ($y, $m, $d) = ($year, $month, $last_day);
+
+  while (Day_of_Week($y, $m, $d) > 5 || $holidays->is_holiday($y, $m, $d)) {
+    $d--;
+  }
+
+  my $last_bus_date = "$m/$d/$y";
+
+  while ($num_days > 0) {
+    ($y, $m, $d) = Add_Delta_Days($y, $m, $d, -1);
+    my $dow = Day_of_Week($y, $m, $d);
+    next if $dow > 5;
+    next if $holidays->is_holiday($y, $m, $d);
+    $num_days--;
+  }
+
+  return ($last_bus_date, "$m/$d/$y");
 }
 
 1;
