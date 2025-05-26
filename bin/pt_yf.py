@@ -80,8 +80,6 @@ def update_db(file_path):
             print(f"{backup}")
             continue
 
-        dividends       = stock.dividends
-        dividends.index = dividends.index.tz_localize(None)
 
         new_sector = sector
         try:
@@ -129,7 +127,10 @@ def update_db(file_path):
         try:
             new_div = stock.info.get("dividendRate", None)
             if new_div is None:
+                new_div = 0.0
                 one_year_ago = datetime.now() - timedelta(days=365)
+                dividends = stock.dividends
+                dividends.index = dividends.index.tz_localize(None)
                 recent_dividends = dividends[dividends.index > one_year_ago]
                 new_div = recent_dividends.sum()
         except Exception as e:
