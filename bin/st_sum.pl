@@ -5,9 +5,14 @@ use Time::Local;
 use File::Basename;
 my $dir = dirname($0);
 
-my %OPT;
+our %OPT;
 use Getopt::Long;
-GetOptions(\%OPT,"date=s");
+GetOptions(
+  \%OPT,
+  "date=s",
+  "date_us=s",
+  "debug"
+);
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
@@ -19,6 +24,11 @@ die $USAGE unless (@ARGV > 0);
 my $date_now = tt_get_date();
 if (exists $OPT{date}) {
   $date_now = $OPT{date};
+}
+
+my $date_us_now = tt_get_date();
+if (exists $OPT{date_us}) {
+  $date_us_now = $OPT{date_us};
 }
 
 my ($mon_now,$day_now,$year_now);
@@ -128,47 +138,60 @@ foreach my $file (@ARGV) {
   print "\n";
 
   my ($usdcad,)     = yf_parse("USDCAD=X",$date);
-  my ($usdcad_now,) = yf_parse("USDCAD=X",$date_now);
+  my ($usdcad_now,) = yf_parse("USDCAD=X",$date_us_now);
 
   my $nav_now = $cash;
   my $total_div_tot = 0;
 
   open(OUT, "|$dir/tt_tab.pl -right -box") || die "Error: Can't pipe to '$dir/tt_tab.pl': $!\n";
-  print OUT "TICKER SHARES CURRENCY PRICE_THEN PRICE_NOW DIV DIV_TOTAL NAV_THEN NAV_NOW CHANGE_PCT\n";
+  print OUT "TICKER CURRENCY WEIGHT SHARES PRICE PRICE_NOW DIV YIELD% DIV_TOTAL NAV NAV_NOW CHANGE%\n";
 
   foreach my $ticker (sort keys %{$weight{$date_base}}) {
+
     next if ($ticker eq "CASH");
+    my $curr = "USD";
+    $curr = "CAD" if ($ticker =~ /\.TO$/);
 
-    my $nav_ticker = $nav*$equity_scaler*$weight{$date_base}{$ticker}/100.0;
+    my $weight = $equity_scaler*$weight{$date_base}{$ticker};
+    my $nav_ticker = $nav*($weight/100.0);
 
-    my ($price_now,$curr2,$div) = yf_parse($ticker,$date_now);
-    my ($price,$curr) = yf_parse($ticker,$date);
-    my $change_pct = 100.0*($price_now/$price-1);
-
+    my $price;
+    my $price_now;
+    my $div;
+    my $div_now;
     my $shares;
     my $market_cap;
     my $market_cap_now;
 
-    if ($curr eq "USD") {
-      $shares = sprintf("%.0f",$nav_ticker/$price/$usdcad);
-      $market_cap = $shares*$price*$usdcad;
-      $market_cap_now = $shares*$price_now*$usdcad_now;
-    } else {
+    if ($ticker =~ /\.TO/) {
+      ($price,$div_now) = yf_parse($ticker,$date);
+      ($price_now,$div) = yf_parse($ticker,$date_now);
       $shares = sprintf("%.0f",$nav_ticker/$price);
       $market_cap = $shares*$price;
       $market_cap_now = $shares*$price_now;
+    } else {
+      ($price,$div_now) = yf_parse($ticker,$date);
+      ($price_now,$div) = yf_parse($ticker,$date_us_now);
+      $shares = sprintf("%.0f",$nav_ticker/$price/$usdcad);
+      $market_cap = $shares*$price*$usdcad;
+      $market_cap_now = $shares*$price_now*$usdcad_now;
     }
+
+    my $change_pct = 100.0*($price_now/$price-1);
+    my $yield_pct = 100.0*($div/$price_now);
 
     $nav_now += $market_cap_now;
     my $div_tot = $shares*$div;
     $total_div_tot += $div_tot;
 
     print OUT $ticker;
-    print OUT " " . fmt_money2($shares,0);
     print OUT " $curr";
+    print OUT " " . fmt_money2($weight,2);
+    print OUT " " . fmt_money2($shares,0);
     print OUT " " . fmt_money2($price,2);
     print OUT " " . fmt_money2($price_now,2);
     print OUT " " . fmt_money2($div,2);
+    print OUT " " . fmt_money2($yield_pct,2);
     print OUT " " . fmt_money2($div_tot,0);
     print OUT " " . fmt_money2($market_cap,0);
     print OUT " " . fmt_money2($market_cap_now,0);
@@ -182,8 +205,13 @@ foreach my $file (@ARGV) {
 
   my $nav_change_pct = 100.0*($nav_now/$nav-1);
 
-  my ($cs_price_now,$cs_curr,$cs_div)    = yf_parse($cs_ticker,$date_now);
-  my ($ps1_price_now,$ps1_curr,$ps1_div) = yf_parse($ps1_ticker,$date_now);
+  my $unit_price = $cs_price + $ps1_price;
+  if ($ps2_ticker =~ /\w/) {
+    $unit_price += $ps2_price;
+  }
+
+  my ($cs_price_now,$cs_div)   = yf_parse($cs_ticker,$date_now);
+  my ($ps1_price_now,$ps1_div) = yf_parse($ps1_ticker,$date_now);
 
   my $unit_price_now = $cs_price_now + $ps1_price_now;
   my $market_cap_now = $cs_qty*$cs_price_now + $ps1_qty*$ps1_price_now;
@@ -193,10 +221,12 @@ foreach my $file (@ARGV) {
   my $ps2_div = "-";
 
   if ($ps2_ticker =~ /\w/) {
-    ($ps2_price_now,$ps2_curr,$ps2_div) = yf_parse($ps2_ticker,$date_now);
+    ($ps2_price_now,$ps2_div) = yf_parse($ps2_ticker,$date_now);
     $unit_price_now += $ps2_price_now;
     $market_cap_now += $ps2_qty*$ps2_price_now;
   }
+
+  my $unit_price_change_pct = 100.0*($unit_price_now/$unit_price-1);
 
   my $cs_market_cap  = $cs_qty*$cs_price_now;
   my $ps1_market_cap = $ps1_qty*$ps1_price_now;
@@ -249,10 +279,7 @@ foreach my $file (@ARGV) {
     $ps2_valu = 100.0*($ps2_price_now/$ps2_nav_ps);
   }
 
-  my $cs_leverage = -999.999;
-  if ($cs_nav_now > 0) {
-    $cs_leverage = $market_cap_now/$cs_nav_now;
-  }
+  my $cs_leverage = $market_cap_now/$cs_market_cap;
 
   my $cs_div_tot  = $cs_div*$cs_qty;
   my $ps1_div_tot = $ps1_div*$ps1_qty;
@@ -309,24 +336,26 @@ foreach my $file (@ARGV) {
   print "PS1 MARKET CAP:      " . fmt_money2($ps1_market_cap,0) . "\n";
   print "PS2 MARKET CAP:      " . fmt_money2($ps2_market_cap,0) . "\n" if ($ps2_ticker =~ /\w/);
   print "TOTAL MARKET CAP:    " . fmt_money2($market_cap_now,0) . "\n";
+  print "CS  SHARES:          " . fmt_money2($cs_qty,0) . "\n";
+  print "PS1 SHARES:          " . fmt_money2($ps1_qty,0) . "\n";
+  print "PS2 SHARES:          " . fmt_money2($ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  NOMINAL:         " . fmt_money2($cs_nom,3) . "\n";
+  print "PS1 NOMINAL:         " . fmt_money2($ps1_nom,3) . "\n";
+  print "PS2 NOMINAL:         " . fmt_money2($ps2_nom,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS LEVERAGE          " . fmt_money2($cs_leverage,4) . "\n";
   print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
   print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
   print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
   print "NOW NAV:             " . fmt_money2($nav_now,0) . "\n";
   print "NOW NAV CHANGE PCT:  " . fmt_money2($nav_change_pct,2) . "%\n";
-  print "CS  SHARES:          " . fmt_money2($cs_qty,0) . "\n";
-  print "PS1 SHARES:          " . fmt_money2($ps1_qty,0) . "\n";
-  print "PS2 SHARES:          " . fmt_money2($ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
-  print "CS LEVERAGE          " . fmt_money2($cs_leverage,4) . "\n";
   print "\n";
  
-  print "CS  NOMINAL:         " . fmt_money2($cs_nom,3) . "\n";
-  print "PS1 NOMINAL:         " . fmt_money2($ps1_nom,3) . "\n";
-  print "PS2 NOMINAL:         " . fmt_money2($ps2_nom,3) . "\n" if ($ps2_ticker =~ /\w/);
-
   print "CS  PRICE THEN:      " . fmt_money2($cs_price,3) . "\n";
   print "PS1 PRICE THEN:      " . fmt_money2($ps1_price,3) . "\n";
   print "PS2 PRICE THEN:      " . fmt_money2($ps2_price,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  PRICE NOW:       " . fmt_money2($cs_price_now,3) . "\n";
+  print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
+  print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
 
   print "CS  PRICE CHANGE:    " . fmt_money2($cs_price_change_pct,2) . "%\n";
   print "PS1 PRICE CHANGE:    " . fmt_money2($ps1_price_change_pct,2) . "%\n";
@@ -356,16 +385,14 @@ foreach my $file (@ARGV) {
   print "PS1 NAV PS:          " . fmt_money2($ps1_nav_ps,3) . "\n";
   print "PS2 NAV PS:          " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
 
-  print "CS  PRICE NOW:       " . fmt_money2($cs_price_now,3) . "\n";
-  print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
-  print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
-
   print "CS  VALUATION:       " . fmt_money2($cs_valu,2) . "%\n";
   print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "%\n";
   print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "%\n" if ($ps2_ticker =~ /\w/);
 
-  print "UNIT NAV:            " . fmt_money2($nav_unit_ps,2) . "\n";
-  print "UNIT PRICE:          " . fmt_money2($unit_price_now,3) . "\n";
+  print "UNIT PRICE THEN:     " . fmt_money2($unit_price,2) . "\n";
+  print "UNIT PRICE NOW:      " . fmt_money2($unit_price_now,2) . "\n";
+  print "UNIT PRICE CHANGE%   " . fmt_money2($unit_price_change_pct,2) . "%\n";
+  print "UNIT NAV NOW:        " . fmt_money2($nav_unit_ps,2) . "\n";
   print "UNIT VALUATION:      " . fmt_money2($unit_valu,2) . "%\n";
   print "\n";
 
@@ -390,12 +417,15 @@ foreach my $file (@ARGV) {
 
 sub yf_parse {
   my ($ticker,$date) = @_;
-  my $cmd = "yf $ticker $date $date\n";
+  my $cmd = "yf $ticker $date $date";
   my $str = `$cmd`;
   if ($str =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
     my ($t,$c,$d,$v,$div) = ($1,$2,$3,$4,$5);
-    return ($v,$c,$div);
+    #return ($v,$c,$div);
+    warn "Debug: $cmd -> $v $div\n" if (exists $OPT{debug});
+    return ($v,$div);
   } else {
+    warn "Debug: $cmd" if (exists $OPT{debug});
     die "Error: Got this string '$str' from command '$cmd'\n";
   }
 }
