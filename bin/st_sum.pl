@@ -311,6 +311,12 @@ foreach my $file (@ARGV) {
   print "PS1 MARKET CAP:      " . fmt_money2($ps1_market_cap,0) . "\n";
   print "PS2 MARKET CAP:      " . fmt_money2($ps2_market_cap,0) . "\n" if ($ps2_ticker =~ /\w/);
   print "TOTAL MARKET CAP:    " . fmt_money2($market_cap_now,0) . "\n";
+  print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
+  print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
+  print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
+  print "CS  SHARES:          " . fmt_money2($cs_qty,0) . "\n";
+  print "PS1 SHARES:          " . fmt_money2($ps1_qty,0) . "\n";
+  print "PS2 SHARES:          " . fmt_money2($ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
   print "CS LEVERAGE          " . fmt_money2($cs_leverage,4) . "\n";
   print "\n";
  
@@ -345,13 +351,6 @@ foreach my $file (@ARGV) {
   print "PS1 PAYOUT RATIO:    " . fmt_money2($ps1_div_pct,2) . "%\n";
   print "PS2 PAYOUT RATIO:    " . fmt_money2($ps2_div_pct,2) . "%\n" if ($ps2_ticker =~ /\w/);
   print "\n";
-
-  print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
-  print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
-  print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
-  print "CS  SHARES:          " . fmt_money2($cs_qty,0) . "\n";
-  print "PS1 SHARES:          " . fmt_money2($ps1_qty,0) . "\n";
-  print "PS2 SHARES:          " . fmt_money2($ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
 
   print "CS  NAV PS:          " . fmt_money2($cs_nav_ps,3) . "\n";
   print "PS1 NAV PS:          " . fmt_money2($ps1_nav_ps,3) . "\n";
