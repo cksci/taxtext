@@ -321,25 +321,25 @@ foreach my $symbol (sort keys %db) {
 unless (exists $OPT{quiet}) {
   my $tot_gain = 0;
   foreach my $curr (sort keys %tot_gain) {
-    warn "# Info: Total $curr gain is $tot_gain{$curr}\n";
+    warn "# Info: Total Realized $curr Gain is " . fmt_money2($tot_gain{$curr},2) . "\n";
     $tot_gain += $tot_gain{$curr};
   }
-  warn "# Info: Total gain is $tot_gain\n";
+  warn "# Info: Total Realized Gain is " . fmt_money2($tot_gain,2) . "\n";
   warn "\n";
 
   my $tot_options_gain = 0;
   foreach my $curr (sort keys %tot_options_gain) {
-    warn "# Info: Total $curr options gain is $tot_options_gain{$curr}\n";
+    warn "# Info: Total Realized $curr Options Gain is " . fmt_money2($tot_options_gain{$curr},2) . "\n";
     $tot_options_gain += $tot_options_gain{$curr};
   }
-  warn "# Info: Total option gain is $tot_options_gain\n";
+  warn "# Info: Total Realized Option Gain is " . fmt_money2($tot_options_gain,2) . "\n";
   warn "\n";
 
   my $tot_div = 0;
   foreach my $curr (sort keys %tot_div) {
-    warn "# Info: Total $curr dividend gain is $tot_div{$curr}\n";
+    warn "# Info: Total Realized $curr Dividend Gain is " . fmt_money2($tot_div{$curr},2) . "\n";
     $tot_div += $tot_div{$curr};
   }
-  warn "# Info: Total dividend is $tot_div\n";
+  warn "# Info: Total Realized Dividend is " . fmt_money2($tot_div,2) . "\n";
   warn "\n";
 }
