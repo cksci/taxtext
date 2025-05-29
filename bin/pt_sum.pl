@@ -166,7 +166,8 @@ my $total_ccd_usd_book  = 0;
 my $total_ccd_usd_value = 0;
 my $total_ccd_usd_gain  = 0;
 
-print "# All values in CAD\n";
+my ($usdcad,) = yf_parse("USDCAD=X");
+print "# All values in CAD (USDCAD=$usdcad)\n";
 print "# Date: " . `date`;
 print "\n";
 
