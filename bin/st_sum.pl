@@ -319,10 +319,8 @@ foreach my $file (@ARGV) {
   }
 
   ## Annual Retraction Gain
-  my $annual_ret_cost = $cs_price_now+$ps1_price_now;
-  $annual_ret_cost += $ps2_price_now if ($ps2_ticker =~ /\w/);
-  my $annual_ret = ($annual_pct/100.0)*$nav_unit_ps - $annual_ret_cost;
-  my $annual_gain_pct = 100.0*($annual_ret/$unit_price_now-1);
+  my $annual_ret = ($annual_pct/100.0)*$nav_unit_ps - $unit_price_now;
+  my $annual_gain_pct = 100.0*($annual_ret/$unit_price_now);
 
   my ($ret_date_mon,$ret_dead_date_mon) = tt_retract_date($year_now,$mon_now,$days);
   my ($ret_date_annual,$ret_dead_date_annual) = tt_retract_date($year_now,$annual_mon,$days);
