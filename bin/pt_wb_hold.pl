@@ -47,19 +47,22 @@ foreach my $file (@ARGV) {
     my @bits = $csv->fields();
 
     my $symbol = fmt_symbol($bits[$cols{"Name"}]);
+    unless ($symbol =~ /\S/) {
+      $symbol = fmt_symbol($bits[$cols{"Symbol"}]);
+    }
     my $qty    = $bits[$cols{"Quantity"}];
 
     next unless ($qty =~ /\d/);
     $qty *= 100;
 
     my $cost;
-    if (exists $cols{"Avg Price"}) {
-      $cost = $bits[$cols{"Avg Price"}];
-    } elsif (exists $cols{"Total Cost"}) {
+    if (exists $cols{"Total Cost"}) {
       $cost = $bits[$cols{"Total Cost"}];
       $cost =~ s/,//g;
       $cost /= abs($qty);
-    } 
+    } elsif (exists $cols{"Avg Price"}) {
+      $cost = $bits[$cols{"Avg Price"}];
+    }
 
     if ($symbol =~ /(\S+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(Call|Put)/i) {
       my ($ticker,$strike,$day,$month,$year,$what) = ($1,$2,$3,$4,$5,$6);

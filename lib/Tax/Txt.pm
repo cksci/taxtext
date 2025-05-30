@@ -22,6 +22,7 @@ our @EXPORT = qw(
   tt_make_yahoo_symbol
   tt_option_parse
   tt_retract_date
+  yf_parse
 );
 
 sub fmt_money {
@@ -384,6 +385,21 @@ sub tt_retract_date {
   }
 
   return ($last_bus_date, "$m/$d/$y");
+}
+
+sub yf_parse {
+  my ($ticker,$date) = @_;
+  $date = tt_get_date() unless (defined $date);
+  my $cmd = "yf $ticker $date $date";
+  my $str = `$cmd`;
+  if ($str =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
+    my ($t,$c,$d,$v,$div) = ($1,$2,$3,$4,$5);
+    warn "# Info: $cmd -> $v $div\n";
+    return ($v,$div);
+  } else {
+    #warn "Warning: $cmd";
+    die "Error: Got this string '$str' from command '$cmd'\n";
+  }
 }
 
 1;

@@ -319,8 +319,8 @@ foreach my $file (@ARGV) {
   }
 
   ## Annual Retraction Gain
-  my $annual_ret = ($annual_pct/100.0)*$nav_unit_ps - $unit_price_now;
-  my $annual_gain_pct = 100.0*($annual_ret/$unit_price_now);
+  my $annual_ret = ($annual_pct/100.0)*$nav_unit_ps;
+  my $annual_gain_pct = 100.0*($annual_ret/$unit_price_now-1);
 
   my ($ret_date_mon,$ret_dead_date_mon) = tt_retract_date($year_now,$mon_now,$days);
   my ($ret_date_annual,$ret_dead_date_annual) = tt_retract_date($year_now,$annual_mon,$days);
@@ -411,19 +411,4 @@ foreach my $file (@ARGV) {
   print "ANNUAL RET DEADLINE: $ret_dead_date_annual\n";
 
   print "\n";
-}
-
-sub yf_parse {
-  my ($ticker,$date) = @_;
-  my $cmd = "yf $ticker $date $date";
-  my $str = `$cmd`;
-  if ($str =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
-    my ($t,$c,$d,$v,$div) = ($1,$2,$3,$4,$5);
-    #return ($v,$c,$div);
-    warn "Debug: $cmd -> $v $div\n" if (exists $OPT{debug});
-    return ($v,$div);
-  } else {
-    warn "Debug: $cmd" if (exists $OPT{debug});
-    die "Error: Got this string '$str' from command '$cmd'\n";
-  }
 }
