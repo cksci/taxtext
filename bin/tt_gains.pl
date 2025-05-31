@@ -53,8 +53,8 @@ foreach my $fh (@fhs) {
       my $value       = $bits[8];
 
       my $symbol_curr = "N/A";
-      if ($symbol =~ /\.(USD|CAD|MXN|GBP)/) {
-        $symbol_curr = $1;
+      if ($symbol =~ /(\.|\-|\/)(USD|CAD|MXN|GBP)$/) {
+        $symbol_curr = $2;
       } else {
         die "Error: Can't determine currency of symbol '$symbol'\n";
       }
@@ -308,8 +308,8 @@ foreach my $symbol (sort keys %db) {
   my $cost = fmt_money(abs($db{$symbol}{quantity})*$db{$symbol}{average_price});
   
   my $curr;
-  if ($symbol =~ /\.(\w+)$/) {
-    $curr = $1;
+  if ($symbol =~ /(\.|\-|\/)(\w+)$/) {
+    $curr = $2;
   } else {
     warn "# Warning: Couldn't determine currency of symbol '$symbol'\n";
     next;
