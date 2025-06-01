@@ -127,13 +127,16 @@ def update_db(file_path):
         try:
             new_div = stock.info.get("dividendRate", None)
             if new_div is None:
-                print(f"# Info: Using dividend history to calculate dividend for symbol {symbol_yahoo}", file=sys.stderr)
                 new_div = 0.0
-                one_year_ago = datetime.now() - timedelta(days=365)
-                dividends = stock.dividends
-                dividends.index = dividends.index.tz_localize(None)
-                recent_dividends = dividends[dividends.index > one_year_ago]
-                new_div = recent_dividends.sum()
+                underlying = stock.info.get("underlyingSymbol", None)
+
+                if underlying is None:
+                    print(f"# Info: Using dividend history to calculate dividend for symbol {symbol_yahoo}", file=sys.stderr)
+                    one_year_ago = datetime.now() - timedelta(days=365)
+                    dividends = stock.dividends
+                    dividends.index = dividends.index.tz_localize(None)
+                    recent_dividends = dividends[dividends.index > one_year_ago]
+                    new_div = recent_dividends.sum()
         except Exception as e:
             print(f"# Info: Can't get symbol {symbol_yahoo} dividendRate attribute", file=sys.stderr)
 
