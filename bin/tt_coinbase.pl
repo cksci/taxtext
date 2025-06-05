@@ -42,7 +42,19 @@ foreach my $file (@ARGV) {
     $csv->parse($_);
     my @bits = $csv->fields();
 
-    if ($bits[$cols{"Transaction Type"}] =~ /buy|sell|staking\s+income/i) {
+    if ($bits[$cols{"Transaction Type"}] =~ /buy|sell/i) {
+      
+      my $date = convert_date($bits[$cols{"Timestamp"}]);
+      my $symbol = $bits[$cols{"Asset"}];
+      my $qty = $bits[$cols{"Quantity Transacted"}];
+      my $price = $bits[$cols{"Price at Transaction"}];
+      my $curr = $bits[$cols{"Price Currency"}];
+      my $value = $bits[$cols{"Total (inclusive of fees and/or spread)"}];
+      my $fee = $bits[$cols{"Fees and/or Spread"}];
+
+      print OUT "BUYSELL $date $date $symbol-$curr $qty $curr $price $fee $value\n";
+
+    } elsif ($bits[$cols{"Transaction Type"}] =~ /staking\s+income/i) {
       
       my $date = convert_date($bits[$cols{"Timestamp"}]);
       my $symbol = $bits[$cols{"Asset"}];

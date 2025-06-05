@@ -46,11 +46,15 @@ foreach my $file (@ARGV) {
     $csv->parse($_);
     my @bits = $csv->fields();
 
-    my $symbol = fmt_symbol($bits[$cols{"Name"}]);
-    unless ($symbol =~ /\S/) {
+    my $symbol;
+    if (exists $cols{"Name"}) { 
+      $symbol = fmt_symbol($bits[$cols{"Name"}]);
+    } elsif (exists $cols{"Symbol"}) {
       $symbol = fmt_symbol($bits[$cols{"Symbol"}]);
+    } else {
+      die "Error: Can't find Symbol on line '$_'\n";
     }
-    my $qty    = $bits[$cols{"Quantity"}];
+    my $qty = $bits[$cols{"Quantity"}];
 
     next unless ($qty =~ /\d/);
     $qty *= 100;

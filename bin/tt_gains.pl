@@ -232,8 +232,8 @@ foreach my $fh (@fhs) {
       my $div_tot     = $bits[9];
 
       my $symbol_curr = "N/A";
-      if ($symbol =~ /\.(USD|CAD|MXN)/) {
-        $symbol_curr = $1;
+      if ($symbol =~ /(\.|\-|\/)(USD|CAD|MXN|GBP)$/) {
+        $symbol_curr = $2;
       }
 
       my $print = 1;

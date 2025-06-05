@@ -4,8 +4,8 @@ use strict;
 
 my %OPT;
 use Getopt::Long;
-GetOptions(\%OPT,"sa","tv","fg","options_too","options_only");
-$OPT{sa} = 1 unless (exists $OPT{tv} || exists $OPT{fg});
+GetOptions(\%OPT,"sa","tv","fg","simple","options_too","options_only");
+$OPT{sa} = 1 unless (exists $OPT{tv} || exists $OPT{fg} || exists $OPT{simple});
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
@@ -40,6 +40,7 @@ if (exists $OPT{sa}) {
 }
 
 my @fg;
+my @simple;
 my %db;
 
 foreach my $fh (@fhs) {
@@ -104,10 +105,17 @@ foreach my $fh (@fhs) {
           $symbol = "TSX:$symbol";
         }
         print "$symbol\n";
+      } elsif (exists $OPT{simple}) {
+        $symbol =~ s/\:US$//;
+        next if ($symbol =~ /:CA/);
+        next if ($symbol =~ /-/);
+        push @simple,$symbol;
       }
     }
   }
 }
 if (exists $OPT{fg}) {
   print join(",",@fg) . "\n";
+} elsif (exists $OPT{simple}) {
+  print join(",",@simple) . "\n";
 }
