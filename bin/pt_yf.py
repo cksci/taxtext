@@ -151,10 +151,13 @@ def update_db(file_path):
 
         new_currency = currency
         try:
-            currency     = stock.info.get("currency", None)
+            new_currency = stock.info.get("currency", None)
             new_value    = qty*new_price
             new_gain     = new_value-new_book
-            new_gain_pct = 100.0*(new_value/new_book-1)
+            if new_book > 0:
+                new_gain_pct = 100.0*(new_value/new_book-1)
+            else:
+                new_gain_pct = 100.0*(1-new_value/new_book)
         except Exception as e:
             print(f"# Info: Can't get symbol {symbol_yahoo} currency attribute", file=sys.stderr)
 
