@@ -104,6 +104,7 @@ foreach my $fh (@fhs) {
         if ($symbol =~ s/:CA//) {
           $symbol = "TSX:$symbol";
         }
+        $symbol = "TSXV:ITR" if ($symbol eq "TSX:ITR");
         print "$symbol\n";
       } elsif (exists $OPT{simple}) {
         $symbol =~ s/\:US$//;
@@ -115,7 +116,7 @@ foreach my $fh (@fhs) {
   }
 }
 if (exists $OPT{fg}) {
-  print join(",",@fg) . "\n";
+  print join(",",sort(@fg)) . "\n";
 } elsif (exists $OPT{simple}) {
-  print join(",",@simple) . "\n";
+  print join(",",sort(@simple)) . "\n";
 }

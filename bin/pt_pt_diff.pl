@@ -113,6 +113,12 @@ while (<IN>) {
         my $qty_new  = $db_new{$account}{$symbol}{quantity};
         my $cost_new = $db_new{$account}{$symbol}{cost};
 
+        # Sometimes new files have invalid costs like N/A because the trade hasn't settled
+        unless ($cost_new =~ /[\d\.\-]+/) {
+          warn "# Warning: Using old cost for symbol '$symbol' because new cost '$cost_new' is invalid\n";
+          $cost_new = $cost;
+        }
+
         my $delta_q = $qty - $qty_new;
         my $delta_c = $cost - $cost_new;
 

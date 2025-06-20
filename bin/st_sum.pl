@@ -344,20 +344,34 @@ foreach my $file (@ARGV) {
   print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
   print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
   print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
-  print "NOW NAV:             " . fmt_money2($nav_now,0) . "\n";
+  print "NAV NOW:             " . fmt_money2($nav_now,0) . "\n";
   print "NOW NAV CHANGE PCT:  " . fmt_money2($nav_change_pct,2) . "%\n";
   print "\n";
  
   print "CS  PRICE THEN:      " . fmt_money2($cs_price,3) . "\n";
   print "PS1 PRICE THEN:      " . fmt_money2($ps1_price,3) . "\n";
   print "PS2 PRICE THEN:      " . fmt_money2($ps2_price,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "UNIT PRICE THEN:     " . fmt_money2($unit_price,2) . "\n";
   print "CS  PRICE NOW:       " . fmt_money2($cs_price_now,3) . "\n";
   print "PS1 PRICE NOW:       " . fmt_money2($ps1_price_now,3) . "\n";
   print "PS2 PRICE NOW:       " . fmt_money2($ps2_price_now,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "UNIT PRICE NOW:      " . fmt_money2($unit_price_now,2) . "\n";
 
-  print "CS  PRICE CHANGE:    " . fmt_money2($cs_price_change_pct,2) . "%\n";
-  print "PS1 PRICE CHANGE:    " . fmt_money2($ps1_price_change_pct,2) . "%\n";
-  print "PS2 PRICE CHANGE:    " . fmt_money2($ps2_price_change_pct,2) . "%\n" if ($ps2_ticker =~ /\w/);
+  print "CS  PRICE CHANGE%:   " . fmt_money2($cs_price_change_pct,2) . "%\n";
+  print "PS1 PRICE CHANGE%:   " . fmt_money2($ps1_price_change_pct,2) . "%\n";
+  print "PS2 PRICE CHANGE%:   " . fmt_money2($ps2_price_change_pct,2) . "%\n" if ($ps2_ticker =~ /\w/);
+  print "UNIT PRICE CHANGE%   " . fmt_money2($unit_price_change_pct,2) . "%\n";
+  print "\n";
+
+  print "CS  NAV PS:          " . fmt_money2($cs_nav_ps,3) . "\n";
+  print "PS1 NAV PS:          " . fmt_money2($ps1_nav_ps,3) . "\n";
+  print "PS2 NAV PS:          " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
+  print "UNIT NAV PS:         " . fmt_money2($nav_unit_ps,2) . "\n";
+
+  print "CS  VALUATION:       " . fmt_money2($cs_valu,2) . "%\n";
+  print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "%\n";
+  print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "%\n" if ($ps2_ticker =~ /\w/);
+  print "UNIT VALUATION:      " . fmt_money2($unit_valu,2) . "%\n";
   print "\n";
 
   print "CS  DIVIDEND PS:     " . fmt_money2($cs_div,3) . "\n";
@@ -377,21 +391,6 @@ foreach my $file (@ARGV) {
   print "CS  PAYOUT RATIO:    " . fmt_money2($cs_div_pct,2) . "%\n";
   print "PS1 PAYOUT RATIO:    " . fmt_money2($ps1_div_pct,2) . "%\n";
   print "PS2 PAYOUT RATIO:    " . fmt_money2($ps2_div_pct,2) . "%\n" if ($ps2_ticker =~ /\w/);
-  print "\n";
-
-  print "CS  NAV PS:          " . fmt_money2($cs_nav_ps,3) . "\n";
-  print "PS1 NAV PS:          " . fmt_money2($ps1_nav_ps,3) . "\n";
-  print "PS2 NAV PS:          " . fmt_money2($ps2_nav_ps,3) . "\n" if ($ps2_ticker =~ /\w/);
-
-  print "CS  VALUATION:       " . fmt_money2($cs_valu,2) . "%\n";
-  print "PS1 VALUATION:       " . fmt_money2($ps1_valu,2) . "%\n";
-  print "PS2 VALUATION:       " . fmt_money2($ps2_valu,2) . "%\n" if ($ps2_ticker =~ /\w/);
-
-  print "UNIT PRICE THEN:     " . fmt_money2($unit_price,2) . "\n";
-  print "UNIT PRICE NOW:      " . fmt_money2($unit_price_now,2) . "\n";
-  print "UNIT PRICE CHANGE%   " . fmt_money2($unit_price_change_pct,2) . "%\n";
-  print "UNIT NAV NOW:        " . fmt_money2($nav_unit_ps,2) . "\n";
-  print "UNIT VALUATION:      " . fmt_money2($unit_valu,2) . "%\n";
   print "\n";
 
   print "CS  MON RET PS:      " . fmt_money2($cs_ret,2) . "\n";

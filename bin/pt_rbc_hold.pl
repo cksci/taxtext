@@ -58,6 +58,8 @@ foreach my $file (@ARGV) {
     $symbol_yahoo =~ s/\.CAD/.TO/;
     $symbol_yahoo =~ s/\.USD//;
 
+    $symbol_yahoo = "ITR.V" if ($symbol_yahoo eq "ITR.TO");
+
     print OUT "HOLD $base $symbol $symbol_yahoo $curr OPEN ON -  - $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
   }
 }

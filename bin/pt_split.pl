@@ -15,4 +15,5 @@ system("pt_export.pl -tv -options_only $awp > Options_TV.csv");
 system("pt_export.pl -fg $awp > Long_FG.csv");
 system("pt_export.pl -fg -options_only $awp > Options_FG.csv");
 
-system("pt_export.pl -simple -options_too $awp > Simple.csv");
+system("pt_export.pl -simple $awp > Long_USD.csv");
+system("pt_export.pl -simple -options_only $awp > Options_USD.csv");

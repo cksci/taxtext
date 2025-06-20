@@ -50,30 +50,50 @@ foreach my $file (@ARGV) {
     $csv->parse($_);
     my @bits = $csv->fields();
 
-    my $symbol = $bits[$cols{"Symbol"}];
-    $symbol =~ s/\s.*//g;
-    my $qty = $bits[$cols{"Qty"}];
-    my $curr = $bits[$cols{"Curr"}];
-    my $cost = $bits[$cols{"Cost/share"}];
-
-    if ($symbol =~ /(\S+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(Call|Put)/i) {
-      my ($ticker,$strike,$day,$month,$year,$what) = ($1,$2,$3,$4,$5,$6);
-
-      $month  = month_num($month);
-      $day    = sprintf("%02d",$day);
-      $month  = sprintf("%02d",$month);
-      $year   = sprintf("%02d",$year);
-      $strike = sprintf("%08d",1000*$strike);
-      if ($what =~ /Call/i) {
-        $what = "C";
-      } else {
-        $what = "P";
-      }
-
-      $symbol = "${ticker}${year}${month}${day}${what}${strike}";
+    my $symbol;
+    if (exists $cols{"Symbol"}) {
+      $symbol = $bits[$cols{"Symbol"}];
+    } elsif (exists $cols{"Equity Symbol"}) {
+      $symbol = $bits[$cols{"Equity Symbol"}];
     } else {
+      die
     }
-    print OUT "HOLD $base $symbol.$curr $symbol $curr OPEN ON - OPTION $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
+    $symbol =~ s/\s.*//g;
+
+    my $qty;
+    if (exists $cols{"Qty"}) {
+      $qty = $bits[$cols{"Qty"}];
+    } elsif (exists $cols{"Open qty"}) {
+      $qty = $bits[$cols{"Open qty"}];
+    } elsif (exists $cols{"Quantity"}) {
+      $qty = $bits[$cols{"Quantity"}];
+    } else {
+      die;
+    }
+
+    my $curr;
+    if (exists $cols{"Curr"}) {
+      $curr = $bits[$cols{"Curr"}];
+    } elsif (exists $cols{"Currency"}) {
+      $curr = $bits[$cols{"Currency"}];
+    } else {
+      die;
+    }
+
+    my $cost;
+    if (exists $cols{"Cost/share"}) {
+      $cost = $bits[$cols{"Cost/share"}];
+    } elsif (exists $cols{"Avg price"}) {
+      $cost = $bits[$cols{"Avg price"}];
+    } elsif (exists $cols{"Cost Per Share"}) {
+      $cost = $bits[$cols{"Cost Per Share"}];
+    } else {
+      die;
+    }
+
+    next unless (defined $cost);
+
+    print OUT "HOLD $base $symbol.$curr $symbol $curr OPEN ON - EQUITY $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
   }
 }
 

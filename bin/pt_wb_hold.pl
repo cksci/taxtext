@@ -47,26 +47,34 @@ foreach my $file (@ARGV) {
     my @bits = $csv->fields();
 
     my $symbol;
+    my $qty = $bits[$cols{"Quantity"}];
+    next unless ($qty =~ /\d/);
+    my $type = "EQUITY";
+
     if (exists $cols{"Name"}) { 
       $symbol = fmt_symbol($bits[$cols{"Name"}]);
+      if ($bits[$cols{"Name"}] =~ /(\S+)\s+\$?\d+/) {
+        $qty *= 100;
+        $type = "OPTION";
+      }
     } elsif (exists $cols{"Symbol"}) {
       $symbol = fmt_symbol($bits[$cols{"Symbol"}]);
+      if ($bits[$cols{"Symbol"}] =~ /(\S+)\s+\$?\d+/) {
+        $qty *= 100;
+        $type = "OPTION";
+      }
     } else {
       die "Error: Can't find Symbol on line '$_'\n";
     }
-    my $qty = $bits[$cols{"Quantity"}];
-
-    next unless ($qty =~ /\d/);
-    $qty *= 100;
 
     my $cost;
-    if (exists $cols{"Total Cost"}) {
+    if (exists $cols{"Avg Price"}) {
+      $cost = $bits[$cols{"Avg Price"}];
+    } elsif (exists $cols{"Total Cost"}) {
       $cost = $bits[$cols{"Total Cost"}];
       $cost =~ s/,//g;
       $cost /= abs($qty);
-    } elsif (exists $cols{"Avg Price"}) {
-      $cost = $bits[$cols{"Avg Price"}];
-    }
+    } 
 
     if ($symbol =~ /(\S+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(Call|Put)/i) {
       my ($ticker,$strike,$day,$month,$year,$what) = ($1,$2,$3,$4,$5,$6);
@@ -85,7 +93,7 @@ foreach my $file (@ARGV) {
       $symbol = "${ticker}${year}${month}${day}${what}${strike}";
     } else {
     }
-    print OUT "HOLD Webull $symbol.$curr $symbol $curr OPEN ON - OPTION $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
+    print OUT "HOLD Webull $symbol.$curr $symbol $curr OPEN ON - $type $qty $cost 0 0 0 0 0 0 0 0 0 0 0 0 0\n";
   }
 }
 

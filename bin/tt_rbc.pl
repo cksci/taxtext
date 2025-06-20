@@ -94,7 +94,7 @@ foreach my $file (@ARGV) {
         $price = $1;
       } elsif ($desc =~ /retraction.*\$\s*([\d\.]+)\s+per\s+share/i) {
         $price = $1;
-      } elsif ($desc =~ /ASN\s+\-\s+CALL/i) {
+      } elsif ($desc =~ /ASN\s+\-\s+(CALL|PUT)/i) {
         $price = $zero;
       } else {
         warn "# Warning: Couldn't determine retraction price for following line:\n  $_\n";

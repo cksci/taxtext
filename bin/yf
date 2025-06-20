@@ -38,7 +38,7 @@ end_date = pd.to_datetime(date2_str)
 #print(end_date)
 
 ticker = yf.Ticker(symbol)
-currency = ticker.info.get("currency")
+currency = ticker.get_info().get("currency")
 
 fetch_start = start_date - pd.Timedelta(days=3)
 fetch_end = end_date + pd.Timedelta(days=3)
