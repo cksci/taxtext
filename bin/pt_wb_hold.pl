@@ -48,7 +48,7 @@ foreach my $file (@ARGV) {
 
     my $symbol;
     my $qty = $bits[$cols{"Quantity"}];
-    next unless ($qty =~ /\d/);
+    next unless (defined $qty && $qty =~ /\d/);
     my $type = "EQUITY";
 
     if (exists $cols{"Name"}) { 
