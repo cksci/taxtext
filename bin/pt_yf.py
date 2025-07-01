@@ -131,7 +131,7 @@ def update_db(file_path):
                 underlying = stock.info.get("underlyingSymbol", None)
 
                 if underlying is None:
-                    print(f"# Info: Using dividend history to calculate dividend for symbol {symbol_yahoo}", file=sys.stderr)
+                    #print(f"# Info: Using dividend history to calculate dividend for symbol {symbol_yahoo}", file=sys.stderr)
                     one_year_ago = datetime.now() - timedelta(days=365)
                     dividends = stock.dividends
                     dividends.index = dividends.index.tz_localize(None)
