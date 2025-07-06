@@ -26,6 +26,8 @@ foreach my $file (@ARGV) {
   my %cols;
   while (<IN>) {
     chomp;
+    s/"//g;
+    s/\s+/ /g;
     if (/Symbol,/) {
       my @bits = split(/,/);
       for (my $i=0; $i<@bits; $i++) {
@@ -37,6 +39,7 @@ foreach my $file (@ARGV) {
 
   while (<IN>) {
     chomp;
+    next if (/Cover\s+Option/); # Webull informatively groups a position and it's covered call
 
     my $curr = "CAD";
     if (s/US\$//g) {
@@ -45,12 +48,15 @@ foreach my $file (@ARGV) {
 
     $csv->parse($_);
     my @bits = $csv->fields();
+    #use Data::Dumper;
+    #print Dumper(\@bits);
+    #print Dumper(\%cols);
 
-    my $symbol;
     my $qty = $bits[$cols{"Quantity"}];
     next unless (defined $qty && $qty =~ /\d/);
     my $type = "EQUITY";
 
+    my $symbol;
     if (exists $cols{"Name"}) { 
       $symbol = fmt_symbol($bits[$cols{"Name"}]);
       if ($bits[$cols{"Name"}] =~ /(\S+)\s+\$?\d+/) {
