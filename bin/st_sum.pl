@@ -203,6 +203,7 @@ foreach my $file (@ARGV) {
 
   my $total_div_yield = 100.0*$total_div_tot/$nav_now;
 
+  my $nav_change     = $nav_now-$nav;
   my $nav_change_pct = 100.0*($nav_now/$nav-1);
 
   my $unit_price = $cs_price + $ps1_price;
@@ -328,8 +329,10 @@ foreach my $file (@ARGV) {
     ($ret_date_annual,$ret_dead_date_annual) = tt_retract_date($year_now+1,$annual_mon,$days);
   }
 
-  print "MONTH CASH:          " . fmt_money2($cash,0) . "\n";
-  print "MONTH NAV:           " . fmt_money2($nav,0) . "\n";
+  print "CASH THEN:           " . fmt_money2($cash,0) . "\n";
+  print "NAV THEN:            " . fmt_money2($nav,0) . "\n";
+  print "NAV NOW:             " . fmt_money2($nav_now,0) . "\n";
+  print "NAV CHANGE:          " . fmt_money2($nav_change,0) . "\n";
   print "CS  MARKET CAP:      " . fmt_money2($cs_market_cap,0) . "\n";
   print "PS1 MARKET CAP:      " . fmt_money2($ps1_market_cap,0) . "\n";
   print "PS2 MARKET CAP:      " . fmt_money2($ps2_market_cap,0) . "\n" if ($ps2_ticker =~ /\w/);
@@ -344,7 +347,6 @@ foreach my $file (@ARGV) {
   print "CS  NAV NOW:         " . fmt_money2($cs_nav_ps*$cs_qty,0) . "\n";
   print "PS1 NAV NOW:         " . fmt_money2($ps1_nav_ps*$ps1_qty,0) . "\n";
   print "PS2 NAV NOW:         " . fmt_money2($ps2_nav_ps*$ps2_qty,0) . "\n" if ($ps2_ticker =~ /\w/);
-  print "NAV NOW:             " . fmt_money2($nav_now,0) . "\n";
   print "NOW NAV CHANGE PCT:  " . fmt_money2($nav_change_pct,2) . "%\n";
   print "\n";
  
