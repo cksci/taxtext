@@ -60,6 +60,26 @@ foreach my $file (@ARGV) {
     }
     $symbol =~ s/\s.*//g;
 
+    my $desc = "";
+    if (exists $cols{"Equity Description"}) {
+      $desc = $bits[$cols{"Equity Description"}];
+      if ($desc =~ /(CALL|PUT)\s+(\S+)\s+(\d+)\/(\d+)\/(\d+)\s+(\S+)/) {
+        my ($what,$ticker,$month,$day,$year,$strike) = ($1,$2,$3,$4,$5,$6);
+
+        $day    = sprintf("%02d",$day);
+        $month  = sprintf("%02d",$month);
+        $year   = sprintf("%02d",$year);
+        $strike = sprintf("%08d",1000*$strike);
+        if ($what =~ /CALL/i) {
+          $what = "C";
+        } else {
+          $what = "P";
+        }
+
+        $symbol = "${ticker}${year}${month}${day}${what}${strike}";
+      }
+    }
+
     my $qty;
     if (exists $cols{"Qty"}) {
       $qty = $bits[$cols{"Qty"}];
